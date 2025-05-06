@@ -1,5 +1,5 @@
 {
-  "name": "extra/wechat-mini-program-message-bundle",
+  "name": "tourze/wechat-mini-program-message-bundle",
   "description": "订阅相关",
   "type": "symfony-bundle",
   "license": "MIT",
