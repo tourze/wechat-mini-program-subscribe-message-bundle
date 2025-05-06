@@ -1,0 +1,25 @@
+services:
+  # default configuration for services in *this* file
+  _defaults:
+    autowire: true      # Automatically injects dependencies in your services.
+    autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+  WechatMiniProgramSubscribeMessageBundle\AdminMenu: ~
+
+  # 如果确认要使用自动扫描、自动注册，建议尽可能将要扫描的目录路径收缩，不要设置那么大的范围
+  WechatMiniProgramSubscribeMessageBundle\Command\:
+    resource: '../../Command/'
+  WechatMiniProgramSubscribeMessageBundle\Controller\:
+    resource: '../../Controller/'
+  WechatMiniProgramSubscribeMessageBundle\EventSubscriber\:
+    resource: '../../EventSubscriber/'
+  WechatMiniProgramSubscribeMessageBundle\ExpressionLanguage\:
+    resource: '../../ExpressionLanguage/'
+  WechatMiniProgramSubscribeMessageBundle\MessageHandler\:
+    resource: '../../MessageHandler/'
+  WechatMiniProgramSubscribeMessageBundle\Procedure\:
+    resource: '../../Procedure/'
+  WechatMiniProgramSubscribeMessageBundle\Repository\:
+    resource: '../../Repository/'
+  WechatMiniProgramSubscribeMessageBundle\Service\:
+    resource: '../../Service/'
