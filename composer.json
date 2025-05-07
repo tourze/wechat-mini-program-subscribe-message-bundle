@@ -19,6 +19,7 @@
     "symfony/yaml": "^6.4 || ^7.1",
     "symfony/event-dispatcher-contracts": "^2.5 | ^3",
     "tourze/enum-extra": "~0.0.5",
+    "tourze/easy-admin-menu-bundle": "0.1.*",
     "tourze/easy-admin-attribute": "0.1.*",
     "tourze/doctrine-indexed-bundle": "0.0.*",
     "tourze/doctrine-track-bundle": "0.1.*"
