@@ -4,7 +4,6 @@ namespace WechatMiniProgramSubscribeMessageBundle\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use DoctrineEnhanceBundle\Repository\CommonRepositoryAware;
 use WechatMiniProgramSubscribeMessageBundle\Entity\SubscribeParam;
 
 /**
@@ -15,7 +14,6 @@ use WechatMiniProgramSubscribeMessageBundle\Entity\SubscribeParam;
  */
 class SubscribeParamRepository extends ServiceEntityRepository
 {
-    use CommonRepositoryAware;
 
     public function __construct(ManagerRegistry $registry)
     {
