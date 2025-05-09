@@ -2,13 +2,13 @@
 
 namespace WechatMiniProgramSubscribeMessageBundle\ExpressionLanguage\Function;
 
-use AppBundle\Entity\BizUser;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\ExpressionLanguage\ExpressionFunction;
 use Symfony\Component\ExpressionLanguage\ExpressionFunctionProviderInterface;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use WechatMiniProgramAuthBundle\Repository\UserRepository;
 use WechatMiniProgramBundle\Enum\MiniProgramState;
@@ -64,7 +64,7 @@ class SendSubscribeMessageFunctionProvider implements ExpressionFunctionProvider
      */
     public function sendWechatMiniProgramSubscribeMessage(array $values, UserInterface $user, string $templateId, array|string|null $data = null, ?string $page = null, ?string $miniprogramState = null): bool
     {
-        if (!($user instanceof BizUser)) {
+        if (!($user instanceof PasswordAuthenticatedUserInterface)) {
             return false;
         }
 
