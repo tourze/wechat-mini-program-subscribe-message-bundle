@@ -10,7 +10,7 @@ use Symfony\Component\ExpressionLanguage\ExpressionFunctionProviderInterface;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use WechatMiniProgramAuthBundle\Repository\UserRepository;
+use Tourze\WechatMiniProgramUserContracts\UserLoaderInterface;
 use WechatMiniProgramBundle\Enum\MiniProgramState;
 use WechatMiniProgramBundle\Service\Client;
 use WechatMiniProgramSubscribeMessageBundle\Request\SendSubscribeMessageRequest;
@@ -24,7 +24,7 @@ use WechatMiniProgramSubscribeMessageBundle\Request\SendSubscribeMessageRequest;
 class SendSubscribeMessageFunctionProvider implements ExpressionFunctionProviderInterface
 {
     public function __construct(
-        private readonly UserRepository $userRepository,
+        private readonly UserLoaderInterface $userLoader,
         private readonly Client $client,
         private readonly LoggerInterface $logger,
     ) {
@@ -57,9 +57,7 @@ class SendSubscribeMessageFunctionProvider implements ExpressionFunctionProvider
      * 发送微信小程序订阅消息，此处一般都是指的一次性消息
      *
      * @param array $values 这里代表的是执行时的上下文信息，具体可以看 \AppBundle\ExpressionLanguage\MessageListener
-     *
      * @return bool 发送成功或失败
-     *
      * @throws InvalidArgumentException
      */
     public function sendWechatMiniProgramSubscribeMessage(array $values, UserInterface $user, string $templateId, array|string|null $data = null, ?string $page = null, ?string $miniprogramState = null): bool
@@ -68,7 +66,11 @@ class SendSubscribeMessageFunctionProvider implements ExpressionFunctionProvider
             return false;
         }
 
-        $wechatUser = $this->userRepository->transformToWechatUser($user);
+        $wechatUser = $this->userLoader->loadUserByOpenId($user->getUserIdentifier());
+        if (!$wechatUser) {
+            $wechatUser = $this->userLoader->loadUserByUnionId($user->getUserIdentifier());
+        }
+
         if (!$wechatUser) {
             $this->logger->warning('找不到指定用户的微信用户信息', [
                 'user' => $user,
