@@ -15,7 +15,7 @@ use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
 use Tourze\EasyAdmin\Attribute\Column\ListColumn;
 use Tourze\EasyAdmin\Attribute\Filter\Filterable;
 use Tourze\EasyAdmin\Attribute\Filter\Keyword;
-use WechatMiniProgramAuthBundle\Entity\User;
+use Tourze\WechatMiniProgramUserContracts\UserInterface;
 use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramSubscribeMessageBundle\Repository\SendSubscribeLogRepository;
 
@@ -76,9 +76,9 @@ class SendSubscribeLog
     private ?Account $account = null;
 
     #[ListColumn(title: '用户')]
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: UserInterface::class)]
     #[ORM\JoinColumn(onDelete: 'CASCADE')]
-    private ?User $user = null;
+    private ?UserInterface $user = null;
 
     #[IndexColumn]
     #[Filterable]
@@ -119,12 +119,12 @@ class SendSubscribeLog
         return $this;
     }
 
-    public function getUser(): ?User
+    public function getUser(): ?UserInterface
     {
         return $this->user;
     }
 
-    public function setUser(?User $user): self
+    public function setUser(?UserInterface $user): self
     {
         $this->user = $user;
 

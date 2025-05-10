@@ -3,7 +3,7 @@
 namespace WechatMiniProgramSubscribeMessageBundle\Event;
 
 use Symfony\Contracts\EventDispatcher\Event;
-use WechatMiniProgramAuthBundle\Entity\User;
+use Tourze\WechatMiniProgramUserContracts\UserInterface;
 use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramSubscribeMessageBundle\Entity\SubscribeMessageLog;
 
@@ -15,7 +15,7 @@ class SubscribeMsgPopupEvent extends Event
 
     private string $templateId;
 
-    private User $user;
+    private UserInterface $user;
 
     private ?string $subscribeStatus;
 
@@ -49,12 +49,12 @@ class SubscribeMsgPopupEvent extends Event
         $this->templateId = $templateId;
     }
 
-    public function getUser(): User
+    public function getUser(): UserInterface
     {
         return $this->user;
     }
 
-    public function setUser(User $user): void
+    public function setUser(UserInterface $user): void
     {
         $this->user = $user;
     }

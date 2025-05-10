@@ -6,14 +6,14 @@ use Doctrine\ORM\EntityManagerInterface;
 use HttpClientBundle\Event\AfterAsyncHttpClientEvent;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
-use WechatMiniProgramAuthBundle\Repository\UserRepository;
+use Tourze\WechatMiniProgramUserContracts\UserLoaderInterface;
 use WechatMiniProgramSubscribeMessageBundle\Entity\SendSubscribeLog;
 
 class WechatSubscribeEventSubscriber
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly UserRepository $wxUserRepository,
+        private readonly UserLoaderInterface $userLoader,
         private readonly LoggerInterface $logger,
     ) {
     }
@@ -39,10 +39,7 @@ class WechatSubscribeEventSubscriber
             return;
         }
 
-        $user = $this->wxUserRepository->findOneBy([
-            'openId' => $options['touser'],
-        ]);
-
+        $user = $this->userLoader->loadUserByOpenId($options['touser']);
         if (empty($user)) {
             return;
         }
