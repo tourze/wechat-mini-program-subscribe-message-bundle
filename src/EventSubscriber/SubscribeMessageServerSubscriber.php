@@ -5,7 +5,7 @@ namespace WechatMiniProgramSubscribeMessageBundle\EventSubscriber;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Tourze\DoctrineAsyncBundle\Service\DoctrineService;
+use Tourze\DoctrineAsyncInsertBundle\Service\AsyncInsertService;
 use WechatMiniProgramServerMessageBundle\Event\ServerMessageRequestEvent;
 use WechatMiniProgramSubscribeMessageBundle\Entity\SubscribeMessageLog;
 use WechatMiniProgramSubscribeMessageBundle\Event\SubscribeMsgPopupEvent;
@@ -21,7 +21,7 @@ class SubscribeMessageServerSubscriber
 {
     public function __construct(
         private readonly SubscribeMessageLogRepository $messageLogRepository,
-        private readonly DoctrineService $doctrineService,
+        private readonly AsyncInsertService $doctrineService,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly LoggerInterface $logger,
     ) {
