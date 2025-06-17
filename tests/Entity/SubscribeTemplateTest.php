@@ -82,14 +82,14 @@ class SubscribeTemplateTest extends TestCase
 
     public function testCreateTimeGetterAndSetter()
     {
-        $now = new \DateTime();
+        $now = new \DateTimeImmutable();
         $this->template->setCreateTime($now);
         $this->assertSame($now, $this->template->getCreateTime());
     }
 
     public function testUpdateTimeGetterAndSetter()
     {
-        $now = new \DateTime();
+        $now = new \DateTimeImmutable();
         $this->template->setUpdateTime($now);
         $this->assertSame($now, $this->template->getUpdateTime());
     }
