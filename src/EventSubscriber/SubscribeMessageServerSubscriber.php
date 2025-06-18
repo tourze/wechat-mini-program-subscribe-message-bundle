@@ -65,7 +65,7 @@ class SubscribeMessageServerSubscriber
 
         foreach ($list as $item) {
             $TemplateId = ArrayHelper::getValue($item, 'TemplateId');
-            if (!$TemplateId) {
+            if (empty($TemplateId)) {
                 $this->logger->error('微信返回异常的订阅结果数据', [
                     'item' => $item,
                     'message' => $event->getMessage(),
@@ -151,7 +151,7 @@ class SubscribeMessageServerSubscriber
             'subscribeStatus' => 'accept',
             'resultMsgId' => null,
         ]);
-        if (!$log) {
+        if ($log === null) {
             // 没的话就自己造一条
             $log = new SubscribeMessageLog();
             $log->setUser($event->getWechatUser());

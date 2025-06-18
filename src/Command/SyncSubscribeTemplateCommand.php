@@ -61,7 +61,7 @@ public function __construct(
                     'account' => $account,
                     'priTmplId' => $datum['priTmplId'],
                 ]);
-                if (!$template) {
+                if ($template === null) {
                     $template = new SubscribeTemplate();
                     $template->setAccount($account);
                     $template->setPriTmplId($datum['priTmplId']);
@@ -75,14 +75,14 @@ public function __construct(
                 $this->entityManager->flush();
 
                 // 枚举值保存起来
-                if ((bool) isset($datum['keywordEnumValueList']) && $datum['keywordEnumValueList']) {
+                if (isset($datum['keywordEnumValueList']) && !empty($datum['keywordEnumValueList'])) {
                     foreach ($datum['keywordEnumValueList'] as $enumDatum) {
                         $codeKey = str_replace('.DATA', '', $enumDatum['keywordCode']);
                         $param = $this->subscribeParamRepository->findOneBy([
                             'template' => $template,
                             'code' => $codeKey,
                         ]);
-                        if (!$param) {
+                        if ($param === null) {
                             $param = new SubscribeParam();
                             $param->setTemplate($template);
                             $param->setCode($codeKey);
@@ -102,7 +102,7 @@ public function __construct(
                         'template' => $template,
                         'code' => $codeKey,
                     ]);
-                    if (!$param) {
+                    if ($param === null) {
                         $param = new SubscribeParam();
                         $param->setTemplate($template);
                         $param->setCode($codeKey);

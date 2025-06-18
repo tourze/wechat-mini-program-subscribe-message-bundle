@@ -54,7 +54,7 @@ public function __construct(
                         'account' => $account,
                         'categoryId' => $item['id'],
                     ]);
-                    if (!$category) {
+                    if ($category === null) {
                         $category = new SubscribeCategory();
                         $category->setAccount($account);
                         $category->setCategoryId($item['id']);

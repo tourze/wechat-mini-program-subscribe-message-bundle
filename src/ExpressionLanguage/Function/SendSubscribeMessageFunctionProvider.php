@@ -67,11 +67,11 @@ class SendSubscribeMessageFunctionProvider implements ExpressionFunctionProvider
         }
 
         $wechatUser = $this->userLoader->loadUserByOpenId($user->getUserIdentifier());
-        if (!$wechatUser) {
+        if ($wechatUser === null) {
             $wechatUser = $this->userLoader->loadUserByUnionId($user->getUserIdentifier());
         }
 
-        if (!$wechatUser) {
+        if ($wechatUser === null) {
             $this->logger->warning('找不到指定用户的微信用户信息', [
                 'user' => $user,
             ]);
@@ -116,7 +116,8 @@ class SendSubscribeMessageFunctionProvider implements ExpressionFunctionProvider
         // TODO 这里生成的path，自动加一层监测参数？
 
         $request = new SendSubscribeMessageRequest();
-        $request->setAccount($wechatUser->getAccount());
+        // TODO: UserInterface 需要添加 getAccount() 方法
+        // $request->setAccount($wechatUser->getAccount());
         $request->setToUser($wechatUser->getOpenId());
         $request->setTemplateId($templateId);
         $request->setData($postData);
