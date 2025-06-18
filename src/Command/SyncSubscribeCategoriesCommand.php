@@ -22,7 +22,9 @@ use WechatMiniProgramSubscribeMessageBundle\Request\GetCategoryListRequest;
 #[AsCommand(name: 'wechat:official-account:SyncSubscribeCategories', description: '同步订阅消息目录')]
 class SyncSubscribeCategoriesCommand extends Command
 {
-    public function __construct(
+    
+    public const NAME = 'wechat:official-account:SyncSubscribeCategories';
+public function __construct(
         private readonly AccountRepository $accountRepository,
         private readonly Client $client,
         private readonly LoggerInterface $logger,
@@ -47,7 +49,7 @@ class SyncSubscribeCategoriesCommand extends Command
                 continue;
             }
             foreach ($response as $item) {
-                if (is_array($item) && isset($item['id'])) {
+                if ((bool) is_array($item) && isset($item['id'])) {
                     $category = $this->categoryRepository->findOneBy([
                         'account' => $account,
                         'categoryId' => $item['id'],

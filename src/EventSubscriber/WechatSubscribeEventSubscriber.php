@@ -40,7 +40,7 @@ class WechatSubscribeEventSubscriber
         }
 
         $user = $this->userLoader->loadUserByOpenId($options['touser']);
-        if (empty($user)) {
+        if ((bool) empty($user)) {
             return;
         }
 

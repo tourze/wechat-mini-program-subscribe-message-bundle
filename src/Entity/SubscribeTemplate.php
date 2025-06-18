@@ -6,61 +6,40 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
+use Stringable;
 use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\EasyAdmin\Attribute\Action\CurdAction;
-use Tourze\EasyAdmin\Attribute\Column\BoolColumn;
-use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
-use Tourze\EasyAdmin\Attribute\Column\ListColumn;
-use Tourze\EasyAdmin\Attribute\Field\FormField;
-use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramSubscribeMessageBundle\Enum\SubscribeTemplateType;
 use WechatMiniProgramSubscribeMessageBundle\Repository\SubscribeTemplateRepository;
 
-#[AsPermission(title: '微信订阅消息模板库')]
 #[ORM\Table(name: 'ims_wxapp_subscribe_template_entity', options: ['comment' => '微信订阅消息模板库'])]
 #[ORM\Entity(repositoryClass: SubscribeTemplateRepository::class)]
-class SubscribeTemplate
+class SubscribeTemplate implements Stringable
 {
     use TimestampableAware;
 
-    #[ExportColumn]
-    #[ListColumn(order: -1, sorter: true)]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
     #[ORM\Column(type: Types::BIGINT, nullable: false, options: ['comment' => 'ID'])]
     private ?string $id = null;
 
-    #[BoolColumn]
-    #[IndexColumn]
     #[TrackColumn]
-    #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '有效', 'default' => 0])]
-    #[ListColumn(order: 97)]
-    #[FormField(order: 97)]
     private ?bool $valid = false;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?Account $account = null;
 
-    #[ListColumn]
-    #[ORM\Column(type: Types::STRING, length: 64, unique: true, options: ['comment' => '模板id'])]
     private ?string $priTmplId = null;
 
-    #[ListColumn]
-    #[ORM\Column(type: Types::STRING, length: 40, options: ['comment' => '模版标题'])]
     private ?string $title = null;
 
-    #[ListColumn]
-    #[ORM\Column(type: Types::STRING, enumType: SubscribeTemplateType::class, options: ['comment' => '模版类型'])]
     private ?SubscribeTemplateType $type = null;
 
-    #[ListColumn(width: 250)]
-    #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '模版内容'])]
     private ?string $content = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '模板内容示例'])]
@@ -192,5 +171,10 @@ class SubscribeTemplate
         }
 
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->id;
     }
 }

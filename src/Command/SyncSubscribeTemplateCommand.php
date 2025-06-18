@@ -23,7 +23,9 @@ use WechatMiniProgramSubscribeMessageBundle\Request\GetPrivateTemplateListReques
 #[AsCommand(name: 'wechat-mini-program:sync-subscribe-template', description: '定期同步订阅消息模板到本地')]
 class SyncSubscribeTemplateCommand extends Command
 {
-    public function __construct(
+    
+    public const NAME = 'wechat-mini-program:sync-subscribe-template';
+public function __construct(
         private readonly AccountRepository $accountRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly Client $client,
@@ -73,7 +75,7 @@ class SyncSubscribeTemplateCommand extends Command
                 $this->entityManager->flush();
 
                 // 枚举值保存起来
-                if (isset($datum['keywordEnumValueList']) && $datum['keywordEnumValueList']) {
+                if ((bool) isset($datum['keywordEnumValueList']) && $datum['keywordEnumValueList']) {
                     foreach ($datum['keywordEnumValueList'] as $enumDatum) {
                         $codeKey = str_replace('.DATA', '', $enumDatum['keywordCode']);
                         $param = $this->subscribeParamRepository->findOneBy([

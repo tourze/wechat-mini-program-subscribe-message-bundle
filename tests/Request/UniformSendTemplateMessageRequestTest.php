@@ -25,10 +25,7 @@ class UniformSendTemplateMessageRequestTest extends TestCase
         $this->request->setToUser('user123');
         
         $options = $this->request->getRequestOptions();
-        
-        $this->assertIsArray($options);
         $this->assertArrayHasKey('json', $options);
-        $this->assertIsArray($options['json']);
         $this->assertSame('user123', $options['json']['touser']);
         $this->assertArrayNotHasKey('mp_template_msg', $options['json']);
     }
@@ -47,12 +44,8 @@ class UniformSendTemplateMessageRequestTest extends TestCase
         $this->request->setMpTemplateMsg($mpTemplateMsg);
         
         $options = $this->request->getRequestOptions();
-        
-        $this->assertIsArray($options);
         $this->assertArrayHasKey('json', $options);
-        $this->assertIsArray($options['json']);
         $this->assertSame('user123', $options['json']['touser']);
-        $this->assertIsArray($options['json']['mp_template_msg']);
         $this->assertSame('wx1234567890', $options['json']['mp_template_msg']['appid']);
         $this->assertSame('template123', $options['json']['mp_template_msg']['template_id']);
         $this->assertSame('https://example.com', $options['json']['mp_template_msg']['url']);

@@ -55,11 +55,11 @@ class SubscribeMessageServerSubscriber
 
         // 保存订阅日志
         $list = $event->getMessage()['SubscribeMsgPopupEvent'] ?? $event->getMessage();
-        if (isset($list['List'])) {
+        if ((bool) isset($list['List'])) {
             $list = $list['List'];
         }
         // 兼容
-        if (isset($list['TemplateId'])) {
+        if ((bool) isset($list['TemplateId'])) {
             $list = [$list];
         }
 
@@ -109,11 +109,11 @@ class SubscribeMessageServerSubscriber
         // 格式参考 {"ToUserName":"gh_262ad44747a1","FromUserName":"ovGLy5OaLS-nFVNsH5FmvIbPS_kY","CreateTime":"1665536678","MsgType":"event","Event":"subscribe_msg_change_event","SubscribeMsgChangeEvent":{"List":{"TemplateId":"FktTRzgkSHHSBEPsSumxbUrlhSak4vGmc7wmhLTSDyE","SubscribeStatusString":"reject"}}}
         // 要注意，这里的List不固定的，偶尔是数组，偶尔是对象
         $list = $event->getMessage()['SubscribeMsgChangeEvent'];
-        if (isset($list['List'])) {
+        if ((bool) isset($list['List'])) {
             $list = $list['List'];
         }
 
-        if (isset($list['TemplateId'])) {
+        if ((bool) isset($list['TemplateId'])) {
             $list = [$list];
         }
 

@@ -84,7 +84,7 @@ class SendSubscribeMessageFunctionProvider implements ExpressionFunctionProvider
         $postData = [];
         foreach ($data as $name => $datum) {
             // 传入的格式，可能是 "number01:now.time" 这样子的
-            if (is_string($datum)) {
+            if ((bool) is_string($datum)) {
                 $tmp = explode(':', $datum, 2);
                 $name = array_shift($tmp);
                 $newExp = array_shift($tmp);

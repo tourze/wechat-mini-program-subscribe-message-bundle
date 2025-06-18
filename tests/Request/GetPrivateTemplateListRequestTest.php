@@ -22,7 +22,6 @@ class GetPrivateTemplateListRequestTest extends TestCase
     public function testGetRequestOptions_returnsEmptyJsonArray()
     {
         $options = $this->request->getRequestOptions();
-        $this->assertIsArray($options);
         $this->assertArrayHasKey('json', $options);
         $this->assertEmpty($options['json']);
     }

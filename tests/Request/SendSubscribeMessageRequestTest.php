@@ -27,10 +27,7 @@ class SendSubscribeMessageRequestTest extends TestCase
         $this->request->setData(['key1' => ['value' => 'value1']]);
         
         $options = $this->request->getRequestOptions();
-        
-        $this->assertIsArray($options);
         $this->assertArrayHasKey('json', $options);
-        $this->assertIsArray($options['json']);
         $this->assertSame('user123', $options['json']['touser']);
         $this->assertSame('template123', $options['json']['template_id']);
         $this->assertSame(['key1' => ['value' => 'value1']], $options['json']['data']);
@@ -49,10 +46,7 @@ class SendSubscribeMessageRequestTest extends TestCase
         $this->request->setLang('en_US');
         
         $options = $this->request->getRequestOptions();
-        
-        $this->assertIsArray($options);
         $this->assertArrayHasKey('json', $options);
-        $this->assertIsArray($options['json']);
         $this->assertSame('user123', $options['json']['touser']);
         $this->assertSame('template123', $options['json']['template_id']);
         $this->assertSame(['key1' => ['value' => 'value1']], $options['json']['data']);

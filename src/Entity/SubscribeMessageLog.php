@@ -4,64 +4,46 @@ namespace WechatMiniProgramSubscribeMessageBundle\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Stringable;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
 use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\EasyAdmin\Attribute\Action\BatchDeletable;
-use Tourze\EasyAdmin\Attribute\Action\Deletable;
-use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
-use Tourze\EasyAdmin\Attribute\Column\ListColumn;
-use Tourze\EasyAdmin\Attribute\Filter\Filterable;
-use Tourze\EasyAdmin\Attribute\Filter\Keyword;
-use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 use Tourze\ScheduleEntityCleanBundle\Attribute\AsScheduleClean;
 use Tourze\WechatMiniProgramUserContracts\UserInterface;
 use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramSubscribeMessageBundle\Repository\SubscribeMessageLogRepository;
 
 #[AsScheduleClean(expression: '4 4 * * *', defaultKeepDay: 365, keepDayEnv: 'WECHAT_MINI_PROGRAM_SUBSCRIBE_MESSAGE_PERSIST_DAY')]
-#[AsPermission(title: '订阅结果日志')]
-#[Deletable]
 #[BatchDeletable]
 #[ORM\Entity(repositoryClass: SubscribeMessageLogRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_subscribe_message_log', options: ['comment' => '订阅结果日志'])]
-class SubscribeMessageLog
+class SubscribeMessageLog implements Stringable
 {
     use TimestampableAware;
-    #[ExportColumn]
-    #[ListColumn(order: -1, sorter: true)]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
     #[ORM\Column(type: Types::BIGINT, nullable: false, options: ['comment' => 'ID'])]
     private ?string $id = null;
 
-    #[ListColumn(title: '小程序')]
     #[ORM\ManyToOne(targetEntity: Account::class)]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?Account $account = null;
 
-    #[ListColumn(title: '用户')]
     #[ORM\ManyToOne(targetEntity: UserInterface::class)]
     #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?UserInterface $user = null;
 
     #[IndexColumn]
-    #[Filterable]
-    #[ListColumn]
-    #[ORM\Column(type: Types::STRING, length: 100, options: ['comment' => '模板ID'])]
     private ?string $templateId = null;
 
     #[IndexColumn]
-    #[ListColumn]
     #[ORM\Column(type: Types::STRING, length: 20, options: ['comment' => '订阅结果'])]
     private ?string $subscribeStatus = null;
 
-    #[Keyword]
-    #[ListColumn(width: 400)]
-    #[ORM\Column(type: Types::TEXT, options: ['comment' => '原始数据'])]
     private ?string $rawData = null;
 
     #[ORM\Column(type: Types::STRING, length: 64, nullable: true, options: ['comment' => '发送结果MsgId'])]
@@ -74,11 +56,9 @@ class SubscribeMessageLog
     private ?string $resultStatus = null;
 
     #[CreateIpColumn]
-    #[ORM\Column(type: Types::STRING, length: 128, nullable: true, options: ['comment' => '创建者IP'])]
     private ?string $createdFromIp = null;
 
     #[UpdateIpColumn]
-    #[ORM\Column(type: Types::STRING, length: 128, nullable: true, options: ['comment' => '更新者IP'])]
     private ?string $updatedFromIp = null;
 
     public function getId(): ?string
@@ -204,4 +184,9 @@ class SubscribeMessageLog
         $this->updatedFromIp = $updatedFromIp;
 
         return $this;
-    }}
+    }
+    public function __toString(): string
+    {
+        return (string) $this->id;
+    }
+}

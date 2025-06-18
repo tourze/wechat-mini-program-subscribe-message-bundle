@@ -4,24 +4,19 @@ namespace WechatMiniProgramSubscribeMessageBundle\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Stringable;
 use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
-use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
-use Tourze\EasyAdmin\Attribute\Column\ListColumn;
-use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramSubscribeMessageBundle\Repository\SubscribeCategoryRepository;
 
-#[AsPermission(title: '微信订阅消息类目')]
 #[ORM\Table(name: 'wechat_mini_program_subscribe_category', options: ['comment' => '微信订阅消息类目'])]
 #[ORM\Entity(repositoryClass: SubscribeCategoryRepository::class)]
 #[ORM\UniqueConstraint(name: 'wechat_mini_program_subscribe_category_idx_uniq', columns: ['account_id', 'category_id'])]
-class SubscribeCategory
+class SubscribeCategory implements Stringable
 {
     use TimestampableAware;
 
-    #[ExportColumn]
-    #[ListColumn(order: -1, sorter: true)]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
@@ -35,7 +30,7 @@ class SubscribeCategory
     #[ORM\Column]
     private ?int $categoryId = null;
 
-    #[ORM\Column(length: 60)]
+#[ORM\Column(length: 60, options: ['comment' => '字段说明'])]
     private ?string $name = null;
 
     public function getId(): ?string
@@ -77,5 +72,10 @@ class SubscribeCategory
         $this->name = $name;
 
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->id;
     }
 }
