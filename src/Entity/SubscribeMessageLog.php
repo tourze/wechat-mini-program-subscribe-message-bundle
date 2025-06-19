@@ -10,14 +10,12 @@ use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
 use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
-use Tourze\EasyAdmin\Attribute\Action\BatchDeletable;
 use Tourze\ScheduleEntityCleanBundle\Attribute\AsScheduleClean;
 use Tourze\WechatMiniProgramUserContracts\UserInterface;
 use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramSubscribeMessageBundle\Repository\SubscribeMessageLogRepository;
 
 #[AsScheduleClean(expression: '4 4 * * *', defaultKeepDay: 365, keepDayEnv: 'WECHAT_MINI_PROGRAM_SUBSCRIBE_MESSAGE_PERSIST_DAY')]
-#[BatchDeletable]
 #[ORM\Entity(repositoryClass: SubscribeMessageLogRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_subscribe_message_log', options: ['comment' => '订阅结果日志'])]
 class SubscribeMessageLog implements Stringable

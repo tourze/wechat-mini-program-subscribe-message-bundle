@@ -20,10 +20,9 @@ use WechatMiniProgramSubscribeMessageBundle\Repository\SubscribeTemplateReposito
 use WechatMiniProgramSubscribeMessageBundle\Request\GetPrivateTemplateListRequest;
 
 #[AsCronTask('15 */4 * * *')]
-#[AsCommand(name: 'wechat-mini-program:sync-subscribe-template', description: '定期同步订阅消息模板到本地')]
+#[AsCommand(name: self::NAME, description: '定期同步订阅消息模板到本地')]
 class SyncSubscribeTemplateCommand extends Command
 {
-    
     public const NAME = 'wechat-mini-program:sync-subscribe-template';
 public function __construct(
         private readonly AccountRepository $accountRepository,

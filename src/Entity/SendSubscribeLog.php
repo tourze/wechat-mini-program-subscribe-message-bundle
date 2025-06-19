@@ -10,7 +10,6 @@ use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
 use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
-use Tourze\EasyAdmin\Attribute\Action\BatchDeletable;
 use Tourze\WechatMiniProgramUserContracts\UserInterface;
 use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramSubscribeMessageBundle\Repository\SendSubscribeLogRepository;
@@ -18,7 +17,6 @@ use WechatMiniProgramSubscribeMessageBundle\Repository\SendSubscribeLogRepositor
 /**
  * 发送订阅消息日志
  */
-#[BatchDeletable]
 #[ORM\Entity(repositoryClass: SendSubscribeLogRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_send_subscribe_log', options: ['comment' => '表描述'])]
 class SendSubscribeLog implements Stringable

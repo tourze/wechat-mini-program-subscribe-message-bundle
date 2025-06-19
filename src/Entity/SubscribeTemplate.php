@@ -10,7 +10,6 @@ use Stringable;
 use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
-use Tourze\EasyAdmin\Attribute\Action\CurdAction;
 use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramSubscribeMessageBundle\Enum\SubscribeTemplateType;
 use WechatMiniProgramSubscribeMessageBundle\Repository\SubscribeTemplateRepository;
@@ -45,7 +44,6 @@ class SubscribeTemplate implements Stringable
     #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '模板内容示例'])]
     private ?string $example = null;
 
-    #[CurdAction(label: '参数配置')]
     #[ORM\OneToMany(mappedBy: 'template', targetEntity: SubscribeParam::class, orphanRemoval: true)]
     private Collection $params;
 

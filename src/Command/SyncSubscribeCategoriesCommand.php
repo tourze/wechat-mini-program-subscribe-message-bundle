@@ -19,11 +19,10 @@ use WechatMiniProgramSubscribeMessageBundle\Request\GetCategoryListRequest;
  * 同步订阅消息目录
  */
 #[AsCronTask('11 */2 * * *')]
-#[AsCommand(name: 'wechat:official-account:SyncSubscribeCategories', description: '同步订阅消息目录')]
+#[AsCommand(name: self::NAME, description: '同步订阅消息目录')]
 class SyncSubscribeCategoriesCommand extends Command
 {
-    
-    public const NAME = 'wechat:official-account:SyncSubscribeCategories';
+    public const NAME = 'wechat:mini-program:sync-subscribe-categories';
 public function __construct(
         private readonly AccountRepository $accountRepository,
         private readonly Client $client,

@@ -27,7 +27,7 @@ class SubscribeCategory implements Stringable
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?Account $account = null;
 
-    #[ORM\Column]
+    #[ORM\Column(options: ['comment' => '类目ID'])]
     private ?int $categoryId = null;
 
 #[ORM\Column(length: 60, options: ['comment' => '字段说明'])]

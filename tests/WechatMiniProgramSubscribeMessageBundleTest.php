@@ -13,7 +13,6 @@ class WechatMiniProgramSubscribeMessageBundleTest extends TestCase
     {
         $dependencies = WechatMiniProgramSubscribeMessageBundle::getBundleDependencies();
         
-        $this->assertIsArray($dependencies);
         $this->assertCount(2, $dependencies);
         $this->assertArrayHasKey(DoctrineIndexedBundle::class, $dependencies);
         $this->assertArrayHasKey(CronJobBundle::class, $dependencies);
