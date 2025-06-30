@@ -5,7 +5,7 @@ namespace WechatMiniProgramSubscribeMessageBundle\Entity;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Ignore;
-use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
+use Tourze\DoctrineSnowflakeBundle\Traits\SnowflakeKeyAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use WechatMiniProgramSubscribeMessageBundle\Enum\SubscribeTemplateData;
 use WechatMiniProgramSubscribeMessageBundle\Repository\SubscribeParamRepository;
@@ -16,12 +16,7 @@ use WechatMiniProgramSubscribeMessageBundle\Repository\SubscribeParamRepository;
 class SubscribeParam implements \Stringable
 {
     use TimestampableAware;
-
-    #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
-    #[ORM\Column(type: Types::BIGINT, nullable: false, options: ['comment' => 'ID'])]
-    private ?string $id = null;
+    use SnowflakeKeyAware;
 
     #[Ignore]
     #[ORM\ManyToOne(inversedBy: 'params')]
@@ -45,11 +40,6 @@ class SubscribeParam implements \Stringable
         }
 
         return $this->getCode();
-    }
-
-    public function getId(): ?string
-    {
-        return $this->id;
     }
 
     public function getTemplate(): ?SubscribeTemplate

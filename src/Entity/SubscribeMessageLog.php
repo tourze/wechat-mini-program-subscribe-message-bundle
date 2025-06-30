@@ -8,7 +8,7 @@ use Stringable;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
-use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
+use Tourze\DoctrineSnowflakeBundle\Traits\SnowflakeKeyAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\ScheduleEntityCleanBundle\Attribute\AsScheduleClean;
 use Tourze\WechatMiniProgramUserContracts\UserInterface;
@@ -21,11 +21,7 @@ use WechatMiniProgramSubscribeMessageBundle\Repository\SubscribeMessageLogReposi
 class SubscribeMessageLog implements Stringable
 {
     use TimestampableAware;
-    #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
-    #[ORM\Column(type: Types::BIGINT, nullable: false, options: ['comment' => 'ID'])]
-    private ?string $id = null;
+    use SnowflakeKeyAware;
 
     #[ORM\ManyToOne(targetEntity: Account::class)]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
@@ -58,11 +54,6 @@ class SubscribeMessageLog implements Stringable
 
     #[UpdateIpColumn]
     private ?string $updatedFromIp = null;
-
-    public function getId(): ?string
-    {
-        return $this->id;
-    }
 
     public function getRawData(): ?string
     {

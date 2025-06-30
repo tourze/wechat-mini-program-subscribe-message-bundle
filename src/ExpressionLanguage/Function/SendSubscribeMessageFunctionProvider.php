@@ -20,7 +20,7 @@ use WechatMiniProgramSubscribeMessageBundle\Request\SendSubscribeMessageRequest;
  *
  * @see https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/subscribe-message/subscribeMessage.send.html
  */
-#[AutoconfigureTag('ecol.function.provider')]
+#[AutoconfigureTag(name: 'ecol.function.provider')]
 class SendSubscribeMessageFunctionProvider implements ExpressionFunctionProviderInterface
 {
     public function __construct(
@@ -122,7 +122,7 @@ class SendSubscribeMessageFunctionProvider implements ExpressionFunctionProvider
         $request->setTemplateId($templateId);
         $request->setData($postData);
         $request->setPage($page);
-        $request->setMiniProgramState(MiniProgramState::tryFrom($miniprogramState));
+        $request->setMiniProgramState($miniprogramState !== null ? MiniProgramState::tryFrom($miniprogramState) : null);
 
         try {
             $this->client->asyncRequest($request);

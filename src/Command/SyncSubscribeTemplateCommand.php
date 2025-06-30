@@ -19,7 +19,7 @@ use WechatMiniProgramSubscribeMessageBundle\Repository\SubscribeParamRepository;
 use WechatMiniProgramSubscribeMessageBundle\Repository\SubscribeTemplateRepository;
 use WechatMiniProgramSubscribeMessageBundle\Request\GetPrivateTemplateListRequest;
 
-#[AsCronTask('15 */4 * * *')]
+#[AsCronTask(expression: '15 */4 * * *')]
 #[AsCommand(name: self::NAME, description: '定期同步订阅消息模板到本地')]
 class SyncSubscribeTemplateCommand extends Command
 {

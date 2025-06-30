@@ -5,7 +5,7 @@ namespace WechatMiniProgramSubscribeMessageBundle\Entity;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Stringable;
-use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
+use Tourze\DoctrineSnowflakeBundle\Traits\SnowflakeKeyAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramSubscribeMessageBundle\Repository\SubscribeCategoryRepository;
@@ -16,12 +16,7 @@ use WechatMiniProgramSubscribeMessageBundle\Repository\SubscribeCategoryReposito
 class SubscribeCategory implements Stringable
 {
     use TimestampableAware;
-
-    #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
-    #[ORM\Column(type: Types::BIGINT, nullable: false, options: ['comment' => 'ID'])]
-    private ?string $id = null;
+    use SnowflakeKeyAware;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
@@ -32,11 +27,6 @@ class SubscribeCategory implements Stringable
 
 #[ORM\Column(length: 60, options: ['comment' => '字段说明'])]
     private ?string $name = null;
-
-    public function getId(): ?string
-    {
-        return $this->id;
-    }
 
     public function getAccount(): ?Account
     {

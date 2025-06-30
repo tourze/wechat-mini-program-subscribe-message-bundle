@@ -18,7 +18,7 @@ use WechatMiniProgramSubscribeMessageBundle\Request\GetCategoryListRequest;
 /**
  * 同步订阅消息目录
  */
-#[AsCronTask('11 */2 * * *')]
+#[AsCronTask(expression: '11 */2 * * *')]
 #[AsCommand(name: self::NAME, description: '同步订阅消息目录')]
 class SyncSubscribeCategoriesCommand extends Command
 {
