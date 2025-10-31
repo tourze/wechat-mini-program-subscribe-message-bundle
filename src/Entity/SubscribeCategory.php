@@ -2,9 +2,8 @@
 
 namespace WechatMiniProgramSubscribeMessageBundle\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Stringable;
+use Symfony\Component\Validator\Constraints as Assert;
 use Tourze\DoctrineSnowflakeBundle\Traits\SnowflakeKeyAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use WechatMiniProgramBundle\Entity\Account;
@@ -13,7 +12,7 @@ use WechatMiniProgramSubscribeMessageBundle\Repository\SubscribeCategoryReposito
 #[ORM\Table(name: 'wechat_mini_program_subscribe_category', options: ['comment' => '微信订阅消息类目'])]
 #[ORM\Entity(repositoryClass: SubscribeCategoryRepository::class)]
 #[ORM\UniqueConstraint(name: 'wechat_mini_program_subscribe_category_idx_uniq', columns: ['account_id', 'category_id'])]
-class SubscribeCategory implements Stringable
+class SubscribeCategory implements \Stringable
 {
     use TimestampableAware;
     use SnowflakeKeyAware;
@@ -23,9 +22,13 @@ class SubscribeCategory implements Stringable
     private ?Account $account = null;
 
     #[ORM\Column(options: ['comment' => '类目ID'])]
+    #[Assert\NotBlank]
+    #[Assert\Positive]
     private ?int $categoryId = null;
 
-#[ORM\Column(length: 60, options: ['comment' => '字段说明'])]
+    #[ORM\Column(length: 60, options: ['comment' => '字段说明'])]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 60)]
     private ?string $name = null;
 
     public function getAccount(): ?Account
@@ -33,11 +36,9 @@ class SubscribeCategory implements Stringable
         return $this->account;
     }
 
-    public function setAccount(?Account $account): self
+    public function setAccount(?Account $account): void
     {
         $this->account = $account;
-
-        return $this;
     }
 
     public function getCategoryId(): ?int
@@ -45,11 +46,9 @@ class SubscribeCategory implements Stringable
         return $this->categoryId;
     }
 
-    public function setCategoryId(int $categoryId): static
+    public function setCategoryId(int $categoryId): void
     {
         $this->categoryId = $categoryId;
-
-        return $this;
     }
 
     public function getName(): ?string
@@ -57,11 +56,9 @@ class SubscribeCategory implements Stringable
         return $this->name;
     }
 
-    public function setName(string $name): static
+    public function setName(string $name): void
     {
         $this->name = $name;
-
-        return $this;
     }
 
     public function __toString(): string

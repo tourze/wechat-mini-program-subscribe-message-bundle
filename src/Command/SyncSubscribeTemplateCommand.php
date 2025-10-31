@@ -2,119 +2,32 @@
 
 namespace WechatMiniProgramSubscribeMessageBundle\Command;
 
-use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
+use Monolog\Attribute\WithMonologChannel;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Tourze\Symfony\CronJob\Attribute\AsCronTask;
-use WechatMiniProgramBundle\Repository\AccountRepository;
-use WechatMiniProgramBundle\Service\Client;
-use WechatMiniProgramSubscribeMessageBundle\Entity\SubscribeParam;
-use WechatMiniProgramSubscribeMessageBundle\Entity\SubscribeTemplate;
-use WechatMiniProgramSubscribeMessageBundle\Enum\SubscribeTemplateData;
-use WechatMiniProgramSubscribeMessageBundle\Enum\SubscribeTemplateType;
-use WechatMiniProgramSubscribeMessageBundle\Repository\SubscribeParamRepository;
-use WechatMiniProgramSubscribeMessageBundle\Repository\SubscribeTemplateRepository;
-use WechatMiniProgramSubscribeMessageBundle\Request\GetPrivateTemplateListRequest;
+use WechatMiniProgramSubscribeMessageBundle\Service\SubscribeTemplateSyncService;
 
 #[AsCronTask(expression: '15 */4 * * *')]
 #[AsCommand(name: self::NAME, description: '定期同步订阅消息模板到本地')]
+#[Autoconfigure(public: true)]
+#[WithMonologChannel(channel: 'wechat_mini_program_subscribe_message')]
 class SyncSubscribeTemplateCommand extends Command
 {
     public const NAME = 'wechat-mini-program:sync-subscribe-template';
-public function __construct(
-        private readonly AccountRepository $accountRepository,
-        private readonly EntityManagerInterface $entityManager,
-        private readonly Client $client,
-        private readonly SubscribeTemplateRepository $subscribeTemplateRepository,
-        private readonly SubscribeParamRepository $subscribeParamRepository,
-        private readonly LoggerInterface $logger,
+
+    public function __construct(
+        private readonly SubscribeTemplateSyncService $syncService,
     ) {
         parent::__construct();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $accounts = $this->accountRepository->findBy(['valid' => true]);
-        foreach ($accounts as $account) {
-            $request = new GetPrivateTemplateListRequest();
-            $request->setAccount($account);
-            try {
-                $response = $this->client->request($request);
-            } catch (\Throwable $exception) {
-                $this->logger->error("拉取小程序模板ID失败:[{$account->getAppId()}]", [
-                    'exception' => $exception,
-                    'account' => $account,
-                ]);
-                continue;
-            }
-
-            if (!isset($response['data'])) {
-                continue;
-            }
-
-            foreach ($response['data'] as $datum) {
-                $template = $this->subscribeTemplateRepository->findOneBy([
-                    'account' => $account,
-                    'priTmplId' => $datum['priTmplId'],
-                ]);
-                if ($template === null) {
-                    $template = new SubscribeTemplate();
-                    $template->setAccount($account);
-                    $template->setPriTmplId($datum['priTmplId']);
-                }
-                $template->setType(SubscribeTemplateType::tryFrom($datum['type']));
-                $template->setTitle($datum['title']);
-                $template->setContent($datum['content']);
-                $template->setExample($datum['example']);
-                $template->setValid(true);
-                $this->entityManager->persist($template);
-                $this->entityManager->flush();
-
-                // 枚举值保存起来
-                if (isset($datum['keywordEnumValueList']) && !empty($datum['keywordEnumValueList'])) {
-                    foreach ($datum['keywordEnumValueList'] as $enumDatum) {
-                        $codeKey = str_replace('.DATA', '', $enumDatum['keywordCode']);
-                        $param = $this->subscribeParamRepository->findOneBy([
-                            'template' => $template,
-                            'code' => $codeKey,
-                        ]);
-                        if ($param === null) {
-                            $param = new SubscribeParam();
-                            $param->setTemplate($template);
-                            $param->setCode($codeKey);
-                            $param->setType(SubscribeTemplateData::ENUM);
-                        }
-                        $param->setEnumValues($datum['enumValueList']);
-                        $this->entityManager->persist($param);
-                        $this->entityManager->flush();
-                        $this->entityManager->detach($param);
-                    }
-                }
-
-                // 解析内容的参数，然后写到数据库
-                preg_match_all('@{{(.*?).DATA}}@', $template->getContent(), $matches);
-                foreach ($matches[1] as $codeKey) {
-                    $param = $this->subscribeParamRepository->findOneBy([
-                        'template' => $template,
-                        'code' => $codeKey,
-                    ]);
-                    if ($param === null) {
-                        $param = new SubscribeParam();
-                        $param->setTemplate($template);
-                        $param->setCode($codeKey);
-
-                        preg_match("@(.*?)(\d+)@", $codeKey, $match);
-                        $param->setType(SubscribeTemplateData::tryFrom($match[1]));
-                    }
-                    $this->entityManager->persist($param);
-                    $this->entityManager->flush();
-                    $this->entityManager->detach($param);
-                }
-            }
-        }
+        $this->syncService->syncAllAccounts();
 
         return Command::SUCCESS;
     }

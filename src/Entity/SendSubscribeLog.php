@@ -4,10 +4,9 @@ namespace WechatMiniProgramSubscribeMessageBundle\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Stringable;
+use Symfony\Component\Validator\Constraints as Assert;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
-use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
-use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
+use Tourze\DoctrineIpBundle\Traits\IpTraceableAware;
 use Tourze\DoctrineSnowflakeBundle\Traits\SnowflakeKeyAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\WechatMiniProgramUserContracts\UserInterface;
@@ -19,10 +18,11 @@ use WechatMiniProgramSubscribeMessageBundle\Repository\SendSubscribeLogRepositor
  */
 #[ORM\Entity(repositoryClass: SendSubscribeLogRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_send_subscribe_log', options: ['comment' => '表描述'])]
-class SendSubscribeLog implements Stringable
+class SendSubscribeLog implements \Stringable
 {
     use TimestampableAware;
     use SnowflakeKeyAware;
+    use IpTraceableAware;
 
     #[ORM\ManyToOne(targetEntity: Account::class)]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
@@ -32,30 +32,33 @@ class SendSubscribeLog implements Stringable
     #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?UserInterface $user = null;
 
+    #[ORM\Column(type: Types::STRING, length: 255, options: ['comment' => '模板ID'])]
     #[IndexColumn]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
     private ?string $templateId = null;
 
+    #[ORM\Column(type: Types::TEXT, options: ['comment' => '发送结果'])]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 65535)]
     private ?string $result = null;
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true, options: ['comment' => '备注'])]
+    #[Assert\Length(max: 255)]
     private ?string $remark = null;
 
-    #[CreateIpColumn]
-    private ?string $createdFromIp = null;
-
-    #[UpdateIpColumn]
-    private ?string $updatedFromIp = null;
+    #[ORM\ManyToOne(targetEntity: SubscribeTemplate::class)]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    private ?SubscribeTemplate $subscribeTemplate = null;
 
     public function getTemplateId(): ?string
     {
         return $this->templateId;
     }
 
-    public function setTemplateId(string $templateId): self
+    public function setTemplateId(string $templateId): void
     {
         $this->templateId = $templateId;
-
-        return $this;
     }
 
     public function getUser(): ?UserInterface
@@ -63,11 +66,9 @@ class SendSubscribeLog implements Stringable
         return $this->user;
     }
 
-    public function setUser(?UserInterface $user): self
+    public function setUser(?UserInterface $user): void
     {
         $this->user = $user;
-
-        return $this;
     }
 
     public function getAccount(): ?Account
@@ -75,11 +76,9 @@ class SendSubscribeLog implements Stringable
         return $this->account;
     }
 
-    public function setAccount(?Account $account): self
+    public function setAccount(?Account $account): void
     {
         $this->account = $account;
-
-        return $this;
     }
 
     public function getResult(): ?string
@@ -97,35 +96,19 @@ class SendSubscribeLog implements Stringable
         return $this->remark;
     }
 
-    public function setRemark(?string $remark): self
+    public function setRemark(?string $remark): void
     {
         $this->remark = $remark;
-
-        return $this;
     }
 
-    public function getCreatedFromIp(): ?string
+    public function getSubscribeTemplate(): ?SubscribeTemplate
     {
-        return $this->createdFromIp;
+        return $this->subscribeTemplate;
     }
 
-    public function setCreatedFromIp(?string $createdFromIp): self
+    public function setSubscribeTemplate(?SubscribeTemplate $subscribeTemplate): void
     {
-        $this->createdFromIp = $createdFromIp;
-
-        return $this;
-    }
-
-    public function getUpdatedFromIp(): ?string
-    {
-        return $this->updatedFromIp;
-    }
-
-    public function setUpdatedFromIp(?string $updatedFromIp): self
-    {
-        $this->updatedFromIp = $updatedFromIp;
-
-        return $this;
+        $this->subscribeTemplate = $subscribeTemplate;
     }
 
     public function __toString(): string

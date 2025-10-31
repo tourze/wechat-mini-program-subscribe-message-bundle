@@ -1,0 +1,334 @@
+{% extends '@EasyAdmin/layout.html.twig' %}
+
+{% block title %}发送模板消息{% endblock %}
+
+{% block main %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">发送模板消息</h3>
+                </div>
+                <div class="card-body">
+                    <form id="sendMessageForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="account_select">小程序账号</label>
+                                    <select id="account_select" name="account_id" class="form-control">
+                                        <option value="">全部账号</option>
+                                        {% for account in accounts %}
+                                            <option value="{{ account.id }}">{{ account.name }} ({{ account.appId }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="template_select">选择模板 <span class="text-danger">*</span></label>
+                                    <select id="template_select" name="template_id" class="form-control" required>
+                                        <option value="">请选择模板</option>
+                                        {% for template in templates %}
+                                            <option value="{{ template.id }}" data-account="{{ template.accountName }}" data-content="{{ template.content }}">
+                                                {{ template.title }} ({{ template.priTmplId }})
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="union_id">用户UnionID <span class="text-danger">*</span></label>
+                                    <input type="text" id="union_id" name="union_id" class="form-control" required 
+                                           placeholder="请输入用户的unionId">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="page">跳转页面</label>
+                                    <input type="text" id="page" name="page" class="form-control" 
+                                           placeholder="例如：index?foo=bar">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="mini_program_state">小程序状态</label>
+                                    <select id="mini_program_state" name="mini_program_state" class="form-control">
+                                        <option value="">默认(正式版)</option>
+                                        <option value="developer">开发版</option>
+                                        <option value="trial">体验版</option>
+                                        <option value="formal">正式版</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="lang">语言</label>
+                                    <select id="lang" name="lang" class="form-control">
+                                        <option value="">默认(简体中文)</option>
+                                        <option value="zh_CN">简体中文</option>
+                                        <option value="en_US">英文</option>
+                                        <option value="zh_HK">繁体中文(香港)</option>
+                                        <option value="zh_TW">繁体中文(台湾)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 模板内容预览 -->
+                        <div class="form-group mb-3" id="template_preview" style="display:none;">
+                            <label>模板内容预览</label>
+                            <div class="alert alert-info" id="template_content"></div>
+                        </div>
+
+                        <!-- 动态参数表单 -->
+                        <div id="params_container" style="display:none;">
+                            <h5>模板参数</h5>
+                            <div id="params_form"></div>
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary" id="send_btn">
+                                <i class="fas fa-paper-plane"></i> 发送消息
+                            </button>
+                            <button type="button" class="btn btn-secondary ms-2" onclick="resetForm()">
+                                <i class="fas fa-undo"></i> 重置
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 结果显示 -->
+    <div class="row mt-3" id="result_container" style="display:none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>发送结果</h5>
+                </div>
+                <div class="card-body" id="result_content"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+$(document).ready(function() {
+    // 账号选择改变时更新模板列表
+    $('#account_select').on('change', function() {
+        loadTemplates($(this).val());
+    });
+
+    // 模板选择改变时加载参数
+    $('#template_select').on('change', function() {
+        const templateId = $(this).val();
+        const templateContent = $(this).find('option:selected').data('content');
+        
+        if (templateId) {
+            showTemplatePreview(templateContent);
+            loadTemplateParams(templateId);
+        } else {
+            hideTemplatePreview();
+            hideParamsForm();
+        }
+    });
+
+    // 表单提交
+    $('#sendMessageForm').on('submit', function(e) {
+        e.preventDefault();
+        sendMessage();
+    });
+});
+
+function loadTemplates(accountId) {
+    const url = '{{ path('wechat_mini_program_subscribe_message_api_templates') }}';
+    const params = accountId ? '?account_id=' + accountId : '';
+    
+    $.get(url + params)
+        .done(function(data) {
+            if (data.success) {
+                updateTemplateSelect(data.templates);
+            }
+        })
+        .fail(function() {
+            alert('加载模板失败，请重试');
+        });
+}
+
+function updateTemplateSelect(templates) {
+    const $select = $('#template_select');
+    $select.empty().append('<option value="">请选择模板</option>');
+    
+    templates.forEach(function(template) {
+        $select.append($('<option>', {
+            value: template.id,
+            text: template.title + ' (' + template.priTmplId + ')',
+            'data-account': template.accountName,
+            'data-content': template.content
+        }));
+    });
+    
+    hideTemplatePreview();
+    hideParamsForm();
+}
+
+function showTemplatePreview(content) {
+    if (content) {
+        $('#template_content').text(content);
+        $('#template_preview').show();
+    }
+}
+
+function hideTemplatePreview() {
+    $('#template_preview').hide();
+}
+
+function loadTemplateParams(templateId) {
+    const url = '{{ path('wechat_mini_program_subscribe_message_api_template_params', {'id': '__ID__'}) }}'.replace('__ID__', templateId);
+    
+    $.get(url)
+        .done(function(data) {
+            if (data.success) {
+                showParamsForm(data.params);
+            }
+        })
+        .fail(function() {
+            alert('加载模板参数失败，请重试');
+        });
+}
+
+function showParamsForm(params) {
+    const $container = $('#params_form');
+    $container.empty();
+    
+    if (params.length === 0) {
+        $('#params_container').hide();
+        return;
+    }
+    
+    params.forEach(function(param) {
+        const $group = $('<div class="form-group mb-3">');
+        
+        let label = param.code;
+        if (param.typeLabel) {
+            label += ' (' + param.typeLabel + ')';
+        }
+        
+        $group.append($('<label>').text(label).addClass('form-label'));
+        
+        let $input;
+        if (param.enumValues && param.enumValues.length > 0) {
+            // 枚举类型使用下拉框
+            $input = $('<select>').addClass('form-control').attr('name', 'param_' + param.code);
+            $input.append('<option value="">请选择</option>');
+            param.enumValues.forEach(function(value) {
+                $input.append($('<option>').val(value).text(value));
+            });
+        } else {
+            // 普通文本输入
+            $input = $('<input type="text">').addClass('form-control').attr('name', 'param_' + param.code);
+            if (param.maxLength) {
+                $input.attr('maxlength', param.maxLength);
+            }
+        }
+        
+        $group.append($input);
+        $container.append($group);
+    });
+    
+    $('#params_container').show();
+}
+
+function hideParamsForm() {
+    $('#params_container').hide();
+}
+
+function sendMessage() {
+    const $btn = $('#send_btn');
+    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 发送中...');
+    
+    // 收集表单数据
+    const formData = {
+        template_id: $('#template_select').val(),
+        union_id: $('#union_id').val(),
+        page: $('#page').val() || null,
+        mini_program_state: $('#mini_program_state').val() || null,
+        lang: $('#lang').val() || null,
+        message_data: {}
+    };
+    
+    // 收集参数数据
+    $('#params_form input, #params_form select').each(function() {
+        const $input = $(this);
+        const paramName = $input.attr('name').replace('param_', '');
+        const value = $input.val();
+        if (value) {
+            formData.message_data[paramName] = value;
+        }
+    });
+    
+    // 发送请求
+    $.ajax({
+        url: '{{ path('wechat_mini_program_subscribe_message_api_send') }}',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(formData),
+        success: function(response) {
+            showResult(response);
+        },
+        error: function(xhr) {
+            let message = '发送失败';
+            try {
+                const response = JSON.parse(xhr.responseText);
+                message = response.message || message;
+            } catch (e) {
+                // ignore
+            }
+            showResult({success: false, message: message});
+        },
+        complete: function() {
+            $btn.prop('disabled', false).html('<i class="fas fa-paper-plane"></i> 发送消息');
+        }
+    });
+}
+
+function showResult(result) {
+    const $container = $('#result_content');
+    $container.empty();
+    
+    if (result.success) {
+        $container.append($('<div class="alert alert-success">').html(
+            '<strong>发送成功！</strong><br>' + result.message
+        ));
+        if (result.response) {
+            $container.append($('<pre class="mt-2">').text(JSON.stringify(result.response, null, 2)));
+        }
+    } else {
+        $container.append($('<div class="alert alert-danger">').html(
+            '<strong>发送失败！</strong><br>' + result.message
+        ));
+    }
+    
+    $('#result_container').show();
+}
+
+function resetForm() {
+    $('#sendMessageForm')[0].reset();
+    hideTemplatePreview();
+    hideParamsForm();
+    $('#result_container').hide();
+}
+</script>
+{% endblock %}

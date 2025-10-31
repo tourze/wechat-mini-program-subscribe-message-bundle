@@ -2,41 +2,52 @@
 
 namespace WechatMiniProgramSubscribeMessageBundle\Tests\Request;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use HttpClientBundle\Tests\Request\RequestTestCase;
 use WechatMiniProgramBundle\Enum\MiniProgramState;
 use WechatMiniProgramSubscribeMessageBundle\Request\SendSubscribeMessageRequest;
 
-class SendSubscribeMessageRequestTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(SendSubscribeMessageRequest::class)]
+final class SendSubscribeMessageRequestTest extends RequestTestCase
 {
     private SendSubscribeMessageRequest $request;
-    
+
     protected function setUp(): void
     {
+        parent::setUp();
         $this->request = new SendSubscribeMessageRequest();
     }
-    
-    public function testGetRequestPath_returnsCorrectPath()
+
+    public function testGetRequestPathReturnsCorrectPath(): void
     {
-        $this->assertSame('/cgi-bin/message/subscribe/send', $this->request->getRequestPath());
+        self::assertSame('/cgi-bin/message/subscribe/send', $this->request->getRequestPath());
     }
-    
-    public function testGetRequestOptions_withRequiredParamsOnly()
+
+    public function testGetRequestOptionsWithRequiredParamsOnly(): void
     {
         $this->request->setToUser('user123');
         $this->request->setTemplateId('template123');
         $this->request->setData(['key1' => ['value' => 'value1']]);
-        
+
         $options = $this->request->getRequestOptions();
-        $this->assertArrayHasKey('json', $options);
-        $this->assertSame('user123', $options['json']['touser']);
-        $this->assertSame('template123', $options['json']['template_id']);
-        $this->assertSame(['key1' => ['value' => 'value1']], $options['json']['data']);
-        $this->assertArrayNotHasKey('page', $options['json']);
-        $this->assertArrayNotHasKey('miniprogram_state', $options['json']);
-        $this->assertArrayNotHasKey('lang', $options['json']);
+        self::assertIsArray($options);
+        self::assertArrayHasKey('json', $options);
+
+        $jsonData = $options['json'];
+        self::assertIsArray($jsonData);
+
+        self::assertSame('user123', $jsonData['touser']);
+        self::assertSame('template123', $jsonData['template_id']);
+        self::assertSame(['key1' => ['value' => 'value1']], $jsonData['data']);
+        self::assertArrayNotHasKey('page', $jsonData);
+        self::assertArrayNotHasKey('miniprogram_state', $jsonData);
+        self::assertArrayNotHasKey('lang', $jsonData);
     }
-    
-    public function testGetRequestOptions_withAllParams()
+
+    public function testGetRequestOptionsWithAllParams(): void
     {
         $this->request->setToUser('user123');
         $this->request->setTemplateId('template123');
@@ -44,61 +55,66 @@ class SendSubscribeMessageRequestTest extends TestCase
         $this->request->setPage('pages/index/index?id=123');
         $this->request->setMiniProgramState(MiniProgramState::TRIAL);
         $this->request->setLang('en_US');
-        
+
         $options = $this->request->getRequestOptions();
-        $this->assertArrayHasKey('json', $options);
-        $this->assertSame('user123', $options['json']['touser']);
-        $this->assertSame('template123', $options['json']['template_id']);
-        $this->assertSame(['key1' => ['value' => 'value1']], $options['json']['data']);
-        $this->assertSame('pages/index/index?id=123', $options['json']['page']);
-        $this->assertSame('trial', $options['json']['miniprogram_state']);
-        $this->assertSame('en_US', $options['json']['lang']);
+        self::assertIsArray($options);
+        self::assertArrayHasKey('json', $options);
+
+        $jsonData = $options['json'];
+        self::assertIsArray($jsonData);
+
+        self::assertSame('user123', $jsonData['touser']);
+        self::assertSame('template123', $jsonData['template_id']);
+        self::assertSame(['key1' => ['value' => 'value1']], $jsonData['data']);
+        self::assertSame('pages/index/index?id=123', $jsonData['page']);
+        self::assertSame('trial', $jsonData['miniprogram_state']);
+        self::assertSame('en_US', $jsonData['lang']);
     }
-    
-    public function testToUserGetterAndSetter()
+
+    public function testToUserGetterAndSetter(): void
     {
         $this->request->setToUser('user123');
-        $this->assertSame('user123', $this->request->getToUser());
+        self::assertSame('user123', $this->request->getToUser());
     }
-    
-    public function testTemplateIdGetterAndSetter()
+
+    public function testTemplateIdGetterAndSetter(): void
     {
         $this->request->setTemplateId('template123');
-        $this->assertSame('template123', $this->request->getTemplateId());
+        self::assertSame('template123', $this->request->getTemplateId());
     }
-    
-    public function testDataGetterAndSetter()
+
+    public function testDataGetterAndSetter(): void
     {
         $data = ['key1' => ['value' => 'value1']];
         $this->request->setData($data);
-        $this->assertSame($data, $this->request->getData());
+        self::assertSame($data, $this->request->getData());
     }
-    
-    public function testPageGetterAndSetter()
+
+    public function testPageGetterAndSetter(): void
     {
         $this->request->setPage('pages/index/index');
-        $this->assertSame('pages/index/index', $this->request->getPage());
-        
+        self::assertSame('pages/index/index', $this->request->getPage());
+
         $this->request->setPage(null);
-        $this->assertNull($this->request->getPage());
+        self::assertNull($this->request->getPage());
     }
-    
-    public function testMiniProgramStateGetterAndSetter()
+
+    public function testMiniProgramStateGetterAndSetter(): void
     {
         $state = MiniProgramState::TRIAL;
         $this->request->setMiniProgramState($state);
-        $this->assertSame($state, $this->request->getMiniProgramState());
-        
+        self::assertSame($state, $this->request->getMiniProgramState());
+
         $this->request->setMiniProgramState(null);
-        $this->assertNull($this->request->getMiniProgramState());
+        self::assertNull($this->request->getMiniProgramState());
     }
-    
-    public function testLangGetterAndSetter()
+
+    public function testLangGetterAndSetter(): void
     {
         $this->request->setLang('en_US');
-        $this->assertSame('en_US', $this->request->getLang());
-        
+        self::assertSame('en_US', $this->request->getLang());
+
         $this->request->setLang(null);
-        $this->assertNull($this->request->getLang());
+        self::assertNull($this->request->getLang());
     }
-} 
+}

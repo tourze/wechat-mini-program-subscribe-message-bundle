@@ -20,7 +20,7 @@ class MpTemplateMsg
     private string $url;
 
     /**
-     * @var array 小程序配置，如 {
+     * @var array<string, string> 小程序配置，如 {
      *            "appid":"xiaochengxuappid12345",
      *            "pagepath":"index?foo=bar"
      *            }
@@ -28,7 +28,7 @@ class MpTemplateMsg
     private array $miniprogram;
 
     /**
-     * @var array 公众号模板消息的数据
+     * @var array<string, mixed> 公众号模板消息的数据
      */
     private array $data;
 
@@ -62,21 +62,33 @@ class MpTemplateMsg
         $this->url = $url;
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function getMiniprogram(): array
     {
         return $this->miniprogram;
     }
 
+    /**
+     * @param array<string, string> $miniprogram
+     */
     public function setMiniprogram(array $miniprogram): void
     {
         $this->miniprogram = $miniprogram;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getData(): array
     {
         return $this->data;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function setData(array $data): void
     {
         $this->data = $data;

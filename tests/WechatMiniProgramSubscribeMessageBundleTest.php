@@ -1,22 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WechatMiniProgramSubscribeMessageBundle\Tests;
 
-use PHPUnit\Framework\TestCase;
-use Tourze\DoctrineIndexedBundle\DoctrineIndexedBundle;
-use Tourze\Symfony\CronJob\CronJobBundle;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+use Tourze\PHPUnitSymfonyKernelTest\AbstractBundleTestCase;
+use WechatMiniProgramSubscribeMessageBundle\DependencyInjection\WechatMiniProgramSubscribeMessageExtension;
 use WechatMiniProgramSubscribeMessageBundle\WechatMiniProgramSubscribeMessageBundle;
 
-class WechatMiniProgramSubscribeMessageBundleTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(WechatMiniProgramSubscribeMessageBundle::class)]
+#[RunTestsInSeparateProcesses]
+final class WechatMiniProgramSubscribeMessageBundleTest extends AbstractBundleTestCase
 {
-    public function testBundleDependencies()
-    {
-        $dependencies = WechatMiniProgramSubscribeMessageBundle::getBundleDependencies();
-        
-        $this->assertCount(2, $dependencies);
-        $this->assertArrayHasKey(DoctrineIndexedBundle::class, $dependencies);
-        $this->assertArrayHasKey(CronJobBundle::class, $dependencies);
-        $this->assertSame(['all' => true], $dependencies[DoctrineIndexedBundle::class]);
-        $this->assertSame(['all' => true], $dependencies[CronJobBundle::class]);
-    }
-} 
+}

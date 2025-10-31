@@ -2,32 +2,39 @@
 
 namespace WechatMiniProgramSubscribeMessageBundle\Tests\Request;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use HttpClientBundle\Tests\Request\RequestTestCase;
 use WechatMiniProgramSubscribeMessageBundle\Request\GetCategoryListRequest;
 
-class GetCategoryListRequestTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(GetCategoryListRequest::class)]
+final class GetCategoryListRequestTest extends RequestTestCase
 {
     private GetCategoryListRequest $request;
-    
+
     protected function setUp(): void
     {
+        parent::setUp();
         $this->request = new GetCategoryListRequest();
     }
-    
-    public function testGetRequestPath_returnsCorrectPath()
+
+    public function testGetRequestPathReturnsCorrectPath(): void
     {
-        $this->assertSame('/wxaapi/newtmpl/getcategory', $this->request->getRequestPath());
+        self::assertSame('/wxaapi/newtmpl/getcategory', $this->request->getRequestPath());
     }
-    
-    public function testGetRequestOptions_returnsEmptyJsonArray()
+
+    public function testGetRequestOptionsReturnsEmptyJsonArray(): void
     {
         $options = $this->request->getRequestOptions();
-        $this->assertArrayHasKey('json', $options);
-        $this->assertEmpty($options['json']);
+        self::assertIsArray($options);
+        self::assertArrayHasKey('json', $options);
+        self::assertEmpty($options['json']);
     }
-    
-    public function testGetRequestMethod_returnsGet()
+
+    public function testGetRequestMethodReturnsGet(): void
     {
-        $this->assertSame('GET', $this->request->getRequestMethod());
+        self::assertSame('GET', $this->request->getRequestMethod());
     }
 }

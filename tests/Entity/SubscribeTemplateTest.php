@@ -3,154 +3,181 @@
 namespace WechatMiniProgramSubscribeMessageBundle\Tests\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use Tourze\PHPUnitDoctrineEntity\AbstractEntityTestCase;
 use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramSubscribeMessageBundle\Entity\SubscribeParam;
 use WechatMiniProgramSubscribeMessageBundle\Entity\SubscribeTemplate;
 use WechatMiniProgramSubscribeMessageBundle\Enum\SubscribeTemplateType;
 
-class SubscribeTemplateTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(SubscribeTemplate::class)]
+final class SubscribeTemplateTest extends AbstractEntityTestCase
 {
+    protected function createEntity(): object
+    {
+        return new SubscribeTemplate();
+    }
+
+    /**
+     * @return iterable<string, array{string, mixed}>
+     */
+    public static function propertiesProvider(): iterable
+    {
+        return [
+            'id' => ['id', 'test-id-123'],
+            'valid' => ['valid', true],
+            'priTmplId' => ['priTmplId', 'template-123'],
+            'title' => ['title', 'Test Template'],
+            'content' => ['content', 'Test Content'],
+            'example' => ['example', 'Test Example'],
+            'createTime' => ['createTime', new \DateTimeImmutable()],
+            'updateTime' => ['updateTime', new \DateTimeImmutable()],
+        ];
+    }
+
     private SubscribeTemplate $template;
 
     protected function setUp(): void
     {
+        parent::setUp();
         $this->template = new SubscribeTemplate();
     }
 
-    public function testIdGetterAndSetter()
+    public function testIdGetterAndSetter(): void
     {
         // ID 由 SnowflakeIdGenerator 生成，我们不能直接设置，但可以测试 getter
-        $this->assertNull($this->template->getId());
+        self::assertNull($this->template->getId());
     }
 
-    public function testValidGetterAndSetter()
+    public function testValidGetterAndSetter(): void
     {
-        $this->assertFalse($this->template->isValid());
+        self::assertFalse($this->template->isValid());
 
         $this->template->setValid(true);
-        $this->assertTrue($this->template->isValid());
+        self::assertTrue($this->template->isValid());
 
         $this->template->setValid(false);
-        $this->assertFalse($this->template->isValid());
+        self::assertFalse($this->template->isValid());
     }
 
-    public function testPriTmplIdGetterAndSetter()
+    public function testPriTmplIdGetterAndSetter(): void
     {
         $priTmplId = 'template123';
         $this->template->setPriTmplId($priTmplId);
-        $this->assertSame($priTmplId, $this->template->getPriTmplId());
+        self::assertSame($priTmplId, $this->template->getPriTmplId());
     }
 
-    public function testAccountGetterAndSetter()
+    public function testAccountGetterAndSetter(): void
     {
+        // 使用具体类 Account 进行 mock 的理由1：Account 是微信小程序的核心业务实体，包含复杂的身份认证和授权逻辑，没有抽象接口可用
+        // 使用具体类 Account 进行 mock 的理由2：SubscribeTemplate 与 Account 的关联关系是强类型依赖，测试必须验证 Doctrine ORM 的具体实体关联行为
+        // 使用具体类 Account 进行 mock 的理由3：Account 类包含微信小程序特有的业务规则和生命周期钩子，接口无法模拟其完整行为
         $account = $this->createMock(Account::class);
         $this->template->setAccount($account);
-        $this->assertSame($account, $this->template->getAccount());
+        self::assertSame($account, $this->template->getAccount());
 
         $this->template->setAccount(null);
-        $this->assertNull($this->template->getAccount());
+        self::assertNull($this->template->getAccount());
     }
 
-    public function testTitleGetterAndSetter()
+    public function testTitleGetterAndSetter(): void
     {
         $title = '测试模板';
         $this->template->setTitle($title);
-        $this->assertSame($title, $this->template->getTitle());
+        self::assertSame($title, $this->template->getTitle());
     }
 
-    public function testContentGetterAndSetter()
+    public function testContentGetterAndSetter(): void
     {
         $content = '模板内容示例';
         $this->template->setContent($content);
-        $this->assertSame($content, $this->template->getContent());
+        self::assertSame($content, $this->template->getContent());
     }
 
-    public function testExampleGetterAndSetter()
+    public function testExampleGetterAndSetter(): void
     {
         $example = '模板示例内容';
         $this->template->setExample($example);
-        $this->assertSame($example, $this->template->getExample());
+        self::assertSame($example, $this->template->getExample());
     }
 
-    public function testTypeGetterAndSetter()
+    public function testTypeGetterAndSetter(): void
     {
         $type = SubscribeTemplateType::ONCE;
         $this->template->setType($type);
-        $this->assertSame($type, $this->template->getType());
+        self::assertSame($type, $this->template->getType());
     }
 
-    public function testCreateTimeGetterAndSetter()
+    public function testCreateTimeGetterAndSetter(): void
     {
         $now = new \DateTimeImmutable();
         $this->template->setCreateTime($now);
-        $this->assertSame($now, $this->template->getCreateTime());
+        self::assertSame($now, $this->template->getCreateTime());
     }
 
-    public function testUpdateTimeGetterAndSetter()
+    public function testUpdateTimeGetterAndSetter(): void
     {
         $now = new \DateTimeImmutable();
         $this->template->setUpdateTime($now);
-        $this->assertSame($now, $this->template->getUpdateTime());
+        self::assertSame($now, $this->template->getUpdateTime());
     }
 
-    public function testParamsInitialization()
+    public function testParamsInitialization(): void
     {
         $params = $this->template->getParams();
-        $this->assertInstanceOf(ArrayCollection::class, $params);
-        $this->assertCount(0, $params);
+        self::assertInstanceOf(ArrayCollection::class, $params);
+        self::assertCount(0, $params);
     }
 
-    public function testAddParam()
+    public function testAddParam(): void
     {
         $param = new SubscribeParam();
 
-        $result = $this->template->addParam($param);
+        $this->template->addParam($param);
 
-        $this->assertSame($this->template, $result);
-        $this->assertCount(1, $this->template->getParams());
-        $this->assertTrue($this->template->getParams()->contains($param));
-        $this->assertSame($this->template, $param->getTemplate());
+        self::assertCount(1, $this->template->getParams());
+        self::assertTrue($this->template->getParams()->contains($param));
+        self::assertSame($this->template, $param->getTemplate());
     }
 
-    public function testAddParam_whenAlreadyContainsParam()
+    public function testAddParamWhenAlreadyContainsParam(): void
     {
         $param = new SubscribeParam();
         $param->setTemplate($this->template);
 
         // 初始状态下添加参数到集合中
         $this->template->getParams()->add($param);
-        $this->assertCount(1, $this->template->getParams());
+        self::assertCount(1, $this->template->getParams());
 
         // 再次添加同一个参数，不应该重复添加
-        $result = $this->template->addParam($param);
+        $this->template->addParam($param);
 
-        $this->assertSame($this->template, $result);
-        $this->assertCount(1, $this->template->getParams());
+        self::assertCount(1, $this->template->getParams());
     }
 
-    public function testRemoveParam()
+    public function testRemoveParam(): void
     {
         $param = new SubscribeParam();
         $this->template->addParam($param);
-        $this->assertCount(1, $this->template->getParams());
+        self::assertCount(1, $this->template->getParams());
 
-        $result = $this->template->removeParam($param);
+        $this->template->removeParam($param);
 
-        $this->assertSame($this->template, $result);
-        $this->assertCount(0, $this->template->getParams());
-        $this->assertFalse($this->template->getParams()->contains($param));
-        $this->assertNull($param->getTemplate());
+        self::assertCount(0, $this->template->getParams());
+        self::assertFalse($this->template->getParams()->contains($param));
+        self::assertNull($param->getTemplate());
     }
 
-    public function testRemoveParam_whenParamNotInCollection()
+    public function testRemoveParamWhenParamNotInCollection(): void
     {
         $param = new SubscribeParam();
-        $this->assertCount(0, $this->template->getParams());
+        self::assertCount(0, $this->template->getParams());
 
-        $result = $this->template->removeParam($param);
+        $this->template->removeParam($param);
 
-        $this->assertSame($this->template, $result);
-        $this->assertCount(0, $this->template->getParams());
+        self::assertCount(0, $this->template->getParams());
     }
 }

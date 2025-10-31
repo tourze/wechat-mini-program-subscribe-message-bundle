@@ -1,0 +1,13 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  WechatMiniProgramSubscribeMessageBundle\Service\AdminMenu: ~
+
+  WechatMiniProgramSubscribeMessageBundle\Tests\Service\MockLinkGenerator:
+    tags:
+      - { name: 'tourze.easy_admin_menu.link_generator' }
+
+  WechatMiniProgramSubscribeMessageBundle\ExpressionLanguage\Function\SendSubscribeMessageFunctionProvider:
+    public: true

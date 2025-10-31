@@ -2,72 +2,97 @@
 
 namespace WechatMiniProgramSubscribeMessageBundle\Tests\Request;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use HttpClientBundle\Tests\Request\RequestTestCase;
 use WechatMiniProgramSubscribeMessageBundle\Request\MpTemplateMsg;
 use WechatMiniProgramSubscribeMessageBundle\Request\UniformSendTemplateMessageRequest;
 
-class UniformSendTemplateMessageRequestTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(UniformSendTemplateMessageRequest::class)]
+final class UniformSendTemplateMessageRequestTest extends RequestTestCase
 {
     private UniformSendTemplateMessageRequest $request;
-    
+
     protected function setUp(): void
     {
+        parent::setUp();
         $this->request = new UniformSendTemplateMessageRequest();
     }
-    
-    public function testGetRequestPath_returnsCorrectPath()
+
+    public function testGetRequestPathReturnsCorrectPath(): void
     {
-        $this->assertSame('/cgi-bin/message/wxopen/template/uniform_send', $this->request->getRequestPath());
+        self::assertSame('/cgi-bin/message/wxopen/template/uniform_send', $this->request->getRequestPath());
     }
-    
-    public function testGetRequestOptions_withRequiredParams()
+
+    public function testGetRequestOptionsWithRequiredParams(): void
     {
         $this->request->setToUser('user123');
-        
+
         $options = $this->request->getRequestOptions();
-        $this->assertArrayHasKey('json', $options);
-        $this->assertSame('user123', $options['json']['touser']);
-        $this->assertArrayNotHasKey('mp_template_msg', $options['json']);
+        self::assertIsArray($options);
+        self::assertArrayHasKey('json', $options);
+
+        $jsonData = $options['json'];
+        self::assertIsArray($jsonData);
+
+        self::assertSame('user123', $jsonData['touser']);
+        self::assertArrayNotHasKey('mp_template_msg', $jsonData);
     }
-    
-    public function testGetRequestOptions_withMpTemplateMsg()
+
+    public function testGetRequestOptionsWithMpTemplateMsg(): void
     {
         $this->request->setToUser('user123');
-        
+
+        // 使用具体类 MpTemplateMsg mock 的理由：
+        // 1. MpTemplateMsg 是核心数据传输对象，测试需要验证其数据结构和行为
+        // 2. 该类的方法稳定且语义明确，使用具体类可以确保测试的准确性
+        // 3. 在请求组装测试中，我们需要确保与真实对象的交互符合预期
         $mpTemplateMsg = $this->createMock(MpTemplateMsg::class);
         $mpTemplateMsg->method('getAppId')->willReturn('wx1234567890');
         $mpTemplateMsg->method('getTemplateId')->willReturn('template123');
         $mpTemplateMsg->method('getUrl')->willReturn('https://example.com');
         $mpTemplateMsg->method('getMiniprogram')->willReturn(['appid' => 'miniapp123', 'pagepath' => 'pages/index/index']);
         $mpTemplateMsg->method('getData')->willReturn(['first' => ['value' => 'Hello']]);
-        
+
         $this->request->setMpTemplateMsg($mpTemplateMsg);
-        
+
         $options = $this->request->getRequestOptions();
-        $this->assertArrayHasKey('json', $options);
-        $this->assertSame('user123', $options['json']['touser']);
-        $this->assertSame('wx1234567890', $options['json']['mp_template_msg']['appid']);
-        $this->assertSame('template123', $options['json']['mp_template_msg']['template_id']);
-        $this->assertSame('https://example.com', $options['json']['mp_template_msg']['url']);
-        $this->assertSame(['appid' => 'miniapp123', 'pagepath' => 'pages/index/index'], $options['json']['mp_template_msg']['miniprogram']);
-        $this->assertSame(['first' => ['value' => 'Hello']], $options['json']['mp_template_msg']['data']);
+        self::assertIsArray($options);
+        self::assertArrayHasKey('json', $options);
+
+        $jsonData = $options['json'];
+        self::assertIsArray($jsonData);
+
+        self::assertSame('user123', $jsonData['touser']);
+
+        self::assertArrayHasKey('mp_template_msg', $jsonData);
+        $mpTemplateMsgData = $jsonData['mp_template_msg'];
+        self::assertIsArray($mpTemplateMsgData);
+
+        self::assertSame('wx1234567890', $mpTemplateMsgData['appid']);
+        self::assertSame('template123', $mpTemplateMsgData['template_id']);
+        self::assertSame('https://example.com', $mpTemplateMsgData['url']);
+        self::assertSame(['appid' => 'miniapp123', 'pagepath' => 'pages/index/index'], $mpTemplateMsgData['miniprogram']);
+        self::assertSame(['first' => ['value' => 'Hello']], $mpTemplateMsgData['data']);
     }
-    
-    public function testToUserGetterAndSetter()
+
+    public function testToUserGetterAndSetter(): void
     {
         $this->request->setToUser('user123');
-        $this->assertSame('user123', $this->request->getToUser());
+        self::assertSame('user123', $this->request->getToUser());
     }
-    
-    public function testMpTemplateMsgGetterAndSetter()
+
+    public function testMpTemplateMsgGetterAndSetter(): void
     {
         $mpTemplateMsg = new MpTemplateMsg();
         $mpTemplateMsg->setAppId('wx1234567890');
-        
+
         $this->request->setMpTemplateMsg($mpTemplateMsg);
-        $this->assertSame($mpTemplateMsg, $this->request->getMpTemplateMsg());
-        
+        self::assertSame($mpTemplateMsg, $this->request->getMpTemplateMsg());
+
         $this->request->setMpTemplateMsg(null);
-        $this->assertNull($this->request->getMpTemplateMsg());
+        self::assertNull($this->request->getMpTemplateMsg());
     }
-} 
+}

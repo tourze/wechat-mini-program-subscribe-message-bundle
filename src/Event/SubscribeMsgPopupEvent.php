@@ -17,7 +17,7 @@ class SubscribeMsgPopupEvent extends Event
 
     private UserInterface $user;
 
-    private ?string $subscribeStatus;
+    private ?string $subscribeStatus = null;
 
     public function getLog(): SubscribeMessageLog
     {

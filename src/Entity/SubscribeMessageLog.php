@@ -4,10 +4,9 @@ namespace WechatMiniProgramSubscribeMessageBundle\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Stringable;
+use Symfony\Component\Validator\Constraints as Assert;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
-use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
-use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
+use Tourze\DoctrineIpBundle\Traits\IpTraceableAware;
 use Tourze\DoctrineSnowflakeBundle\Traits\SnowflakeKeyAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\ScheduleEntityCleanBundle\Attribute\AsScheduleClean;
@@ -18,10 +17,11 @@ use WechatMiniProgramSubscribeMessageBundle\Repository\SubscribeMessageLogReposi
 #[AsScheduleClean(expression: '4 4 * * *', defaultKeepDay: 365, keepDayEnv: 'WECHAT_MINI_PROGRAM_SUBSCRIBE_MESSAGE_PERSIST_DAY')]
 #[ORM\Entity(repositoryClass: SubscribeMessageLogRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_subscribe_message_log', options: ['comment' => '订阅结果日志'])]
-class SubscribeMessageLog implements Stringable
+class SubscribeMessageLog implements \Stringable
 {
     use TimestampableAware;
     use SnowflakeKeyAware;
+    use IpTraceableAware;
 
     #[ORM\ManyToOne(targetEntity: Account::class)]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
@@ -32,39 +32,41 @@ class SubscribeMessageLog implements Stringable
     private ?UserInterface $user = null;
 
     #[IndexColumn]
+    #[ORM\Column(type: Types::STRING, length: 255, options: ['comment' => '模板ID'])]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
     private ?string $templateId = null;
 
     #[IndexColumn]
     #[ORM\Column(type: Types::STRING, length: 20, options: ['comment' => '订阅结果'])]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 20)]
     private ?string $subscribeStatus = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '原始数据'])]
+    #[Assert\Length(max: 65535)]
     private ?string $rawData = null;
 
     #[ORM\Column(type: Types::STRING, length: 64, nullable: true, options: ['comment' => '发送结果MsgId'])]
+    #[Assert\Length(max: 64)]
     private ?string $resultMsgId = null;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true, options: ['comment' => '发送结果ErrorCode'])]
+    #[Assert\Type(type: 'int')]
     private ?int $resultCode = null;
 
     #[ORM\Column(type: Types::STRING, length: 36, nullable: true, options: ['comment' => '发送结果ErrorStatus'])]
+    #[Assert\Length(max: 36)]
     private ?string $resultStatus = null;
-
-    #[CreateIpColumn]
-    private ?string $createdFromIp = null;
-
-    #[UpdateIpColumn]
-    private ?string $updatedFromIp = null;
 
     public function getRawData(): ?string
     {
         return $this->rawData;
     }
 
-    public function setRawData(string $rawData): self
+    public function setRawData(string $rawData): void
     {
         $this->rawData = $rawData;
-
-        return $this;
     }
 
     public function getTemplateId(): ?string
@@ -72,11 +74,9 @@ class SubscribeMessageLog implements Stringable
         return $this->templateId;
     }
 
-    public function setTemplateId(string $templateId): self
+    public function setTemplateId(string $templateId): void
     {
         $this->templateId = $templateId;
-
-        return $this;
     }
 
     public function getSubscribeStatus(): ?string
@@ -84,11 +84,9 @@ class SubscribeMessageLog implements Stringable
         return $this->subscribeStatus;
     }
 
-    public function setSubscribeStatus(string $subscribeStatus): self
+    public function setSubscribeStatus(string $subscribeStatus): void
     {
         $this->subscribeStatus = $subscribeStatus;
-
-        return $this;
     }
 
     public function getUser(): ?UserInterface
@@ -96,11 +94,9 @@ class SubscribeMessageLog implements Stringable
         return $this->user;
     }
 
-    public function setUser(?UserInterface $user): self
+    public function setUser(?UserInterface $user): void
     {
         $this->user = $user;
-
-        return $this;
     }
 
     public function getAccount(): ?Account
@@ -108,11 +104,9 @@ class SubscribeMessageLog implements Stringable
         return $this->account;
     }
 
-    public function setAccount(?Account $account): self
+    public function setAccount(?Account $account): void
     {
         $this->account = $account;
-
-        return $this;
     }
 
     public function getResultMsgId(): ?string
@@ -120,11 +114,9 @@ class SubscribeMessageLog implements Stringable
         return $this->resultMsgId;
     }
 
-    public function setResultMsgId(?string $resultMsgId): self
+    public function setResultMsgId(?string $resultMsgId): void
     {
         $this->resultMsgId = $resultMsgId;
-
-        return $this;
     }
 
     public function getResultCode(): ?int
@@ -132,11 +124,9 @@ class SubscribeMessageLog implements Stringable
         return $this->resultCode;
     }
 
-    public function setResultCode(?int $resultCode): self
+    public function setResultCode(?int $resultCode): void
     {
         $this->resultCode = $resultCode;
-
-        return $this;
     }
 
     public function getResultStatus(): ?string
@@ -144,36 +134,11 @@ class SubscribeMessageLog implements Stringable
         return $this->resultStatus;
     }
 
-    public function setResultStatus(?string $resultStatus): self
+    public function setResultStatus(?string $resultStatus): void
     {
         $this->resultStatus = $resultStatus;
-
-        return $this;
     }
 
-    public function getCreatedFromIp(): ?string
-    {
-        return $this->createdFromIp;
-    }
-
-    public function setCreatedFromIp(?string $createdFromIp): self
-    {
-        $this->createdFromIp = $createdFromIp;
-
-        return $this;
-    }
-
-    public function getUpdatedFromIp(): ?string
-    {
-        return $this->updatedFromIp;
-    }
-
-    public function setUpdatedFromIp(?string $updatedFromIp): self
-    {
-        $this->updatedFromIp = $updatedFromIp;
-
-        return $this;
-    }
     public function __toString(): string
     {
         return (string) $this->id;

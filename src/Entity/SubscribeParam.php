@@ -5,6 +5,7 @@ namespace WechatMiniProgramSubscribeMessageBundle\Entity;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Ignore;
+use Symfony\Component\Validator\Constraints as Assert;
 use Tourze\DoctrineSnowflakeBundle\Traits\SnowflakeKeyAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use WechatMiniProgramSubscribeMessageBundle\Enum\SubscribeTemplateData;
@@ -23,23 +24,34 @@ class SubscribeParam implements \Stringable
     #[ORM\JoinColumn(nullable: false)]
     private ?SubscribeTemplate $template = null;
 
+    #[ORM\Column(enumType: SubscribeTemplateData::class, options: ['comment' => '参数类型'])]
+    #[Assert\NotNull]
+    #[Assert\Choice(callback: [SubscribeTemplateData::class, 'cases'])]
     private ?SubscribeTemplateData $type = null;
 
+    #[ORM\Column(type: Types::STRING, length: 50, options: ['comment' => '参数代码'])]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 50)]
     private ?string $code = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => '数据映射表达式'])]
+    #[Assert\Length(max: 65535)]
     private ?string $mapExpression = null;
 
+    /**
+     * @var string[]|null
+     */
     #[ORM\Column(type: Types::JSON, nullable: true, options: ['comment' => '枚举数据'])]
-    private array $enumValues = [];
+    #[Assert\Type(type: 'array')]
+    private ?array $enumValues = null;
 
     public function __toString(): string
     {
-        if ($this->getId() === null) {
+        if (null === $this->getId()) {
             return '';
         }
 
-        return $this->getCode();
+        return $this->getCode() ?? '';
     }
 
     public function getTemplate(): ?SubscribeTemplate
@@ -47,11 +59,9 @@ class SubscribeParam implements \Stringable
         return $this->template;
     }
 
-    public function setTemplate(?SubscribeTemplate $template): self
+    public function setTemplate(?SubscribeTemplate $template): void
     {
         $this->template = $template;
-
-        return $this;
     }
 
     public function getType(): ?SubscribeTemplateData
@@ -59,23 +69,29 @@ class SubscribeParam implements \Stringable
         return $this->type;
     }
 
-    public function setType(SubscribeTemplateData $type): self
+    public function setType(SubscribeTemplateData $type): void
     {
         $this->type = $type;
-
-        return $this;
     }
 
+    /**
+     * @return list<string>
+     */
     public function getEnumValues(): array
     {
-        return $this->enumValues;
+        if (null === $this->enumValues) {
+            return [];
+        }
+
+        return array_values($this->enumValues);
     }
 
-    public function setEnumValues(?array $enumValues): self
+    /**
+     * @param list<string>|null $enumValues
+     */
+    public function setEnumValues(?array $enumValues): void
     {
         $this->enumValues = $enumValues;
-
-        return $this;
     }
 
     public function getCode(): ?string
@@ -83,11 +99,9 @@ class SubscribeParam implements \Stringable
         return $this->code;
     }
 
-    public function setCode(string $code): self
+    public function setCode(string $code): void
     {
         $this->code = $code;
-
-        return $this;
     }
 
     public function getMapExpression(): ?string
@@ -95,10 +109,8 @@ class SubscribeParam implements \Stringable
         return $this->mapExpression;
     }
 
-    public function setMapExpression(?string $mapExpression): self
+    public function setMapExpression(?string $mapExpression): void
     {
         $this->mapExpression = $mapExpression;
-
-        return $this;
     }
 }

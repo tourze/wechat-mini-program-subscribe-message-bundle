@@ -22,6 +22,7 @@ class SendSubscribeMessageRequest extends WithAccountRequest
      */
     private string $templateId;
 
+    /** @var array<string, array<string, string>> */
     private array $data = [];
 
     /**
@@ -89,11 +90,17 @@ class SendSubscribeMessageRequest extends WithAccountRequest
         $this->templateId = $templateId;
     }
 
+    /**
+     * @return array<string, array<string, string>>
+     */
     public function getData(): array
     {
         return $this->data;
     }
 
+    /**
+     * @param array<string, array<string, string>> $data
+     */
     public function setData(array $data): void
     {
         $this->data = $data;

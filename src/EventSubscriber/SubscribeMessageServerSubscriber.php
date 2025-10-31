@@ -2,6 +2,7 @@
 
 namespace WechatMiniProgramSubscribeMessageBundle\EventSubscriber;
 
+use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -17,6 +18,7 @@ use Yiisoft\Json\Json;
  * 消费者在进行订阅相关操作时，微信会发送通知给我们后端。
  * 后端需要记录下该数据日志，同时分发相关事件出去。
  */
+#[WithMonologChannel(channel: 'wechat_mini_program_subscribe_message')]
 class SubscribeMessageServerSubscriber
 {
     public function __construct(
@@ -40,61 +42,121 @@ class SubscribeMessageServerSubscriber
             return;
         }
 
-        // {
-        //    "ToUserName": "gh_6b8d87e0a0bd",
-        //    "FromUserName": "oEAYS5SphcwGXgoCSmO7C0Zw4uF0",
-        //    "CreateTime": 1671439759,
-        //    "MsgType": "event",
-        //    "Event": "subscribe_msg_popup_event",
-        //    "List": {
-        //        "PopupScene": "0",
-        //        "SubscribeStatusString": "accept",
-        //        "TemplateId": "FLp-6P7-YQFFKtz9RroJLOJlD1zMFTH0ASRqDILpYys"
-        //    }
-        // }
-
-        // 保存订阅日志
-        $list = $event->getMessage()['SubscribeMsgPopupEvent'] ?? $event->getMessage();
-        if ((bool) isset($list['List'])) {
-            $list = $list['List'];
-        }
-        // 兼容
-        if ((bool) isset($list['TemplateId'])) {
-            $list = [$list];
+        $list = $this->extractPopupEventList($event);
+        if (null === $list) {
+            return;
         }
 
         foreach ($list as $item) {
-            $TemplateId = ArrayHelper::getValue($item, 'TemplateId');
-            if (empty($TemplateId)) {
-                $this->logger->error('微信返回异常的订阅结果数据', [
-                    'item' => $item,
-                    'message' => $event->getMessage(),
-                ]);
-                continue;
-            }
-
-            // 拆分为N个记录，方便我们一个个发送
-            $log = new SubscribeMessageLog();
-            $log->setAccount($event->getAccount());
-            $log->setUser($event->getWechatUser());
-            $log->setTemplateId($TemplateId);
-            $log->setSubscribeStatus($item['SubscribeStatusString']);
-            $log->setRawData(Json::encode($item));
-            $this->doctrineService->asyncInsert($log);
-
-            // 这里新增一个事件
-            $nextEvent = new SubscribeMsgPopupEvent();
-            $nextEvent->setAccount($event->getAccount());
-            $nextEvent->setTemplateId($TemplateId);
-            $nextEvent->setUser($event->getWechatUser());
-            $nextEvent->setSubscribeStatus($item['SubscribeStatusString']);
-            $this->eventDispatcher->dispatch($nextEvent);
+            $this->processPopupEventItem($event, $item);
         }
     }
 
     /**
-     * 当用户在手机端服务通知里消息卡片右上角“...”管理消息时,或者在小程序设置管理中的订阅消息管理页面内管理消息时,相应的行为事件会推送至开发者所配置的服务器地址。
-     * 目前只推送取消订阅的事件，即对消息设置“拒收”
+     * @return array<mixed>|null
+     */
+    private function extractPopupEventList(ServerMessageRequestEvent $event): ?array
+    {
+        $message = $event->getMessage();
+        $list = $message['SubscribeMsgPopupEvent'] ?? $message;
+
+        if (is_array($list) && isset($list['List'])) {
+            $list = $list['List'];
+        }
+
+        if (is_array($list) && isset($list['TemplateId'])) {
+            $list = [$list];
+        }
+
+        if (!is_array($list)) {
+            $this->logger->error('微信返回的List数据不是数组格式', ['list' => $list, 'message' => $message]);
+
+            return null;
+        }
+
+        return $list;
+    }
+
+    private function processPopupEventItem(ServerMessageRequestEvent $event, mixed $item): void
+    {
+        if (!$this->isValidPopupEventItem($item)) {
+            return;
+        }
+
+        /** @var array<string, mixed>|object $item */
+        $TemplateId = ArrayHelper::getValue($item, 'TemplateId');
+        if (!$this->isValidTemplateId($TemplateId, $item, $event)) {
+            return;
+        }
+
+        $subscribeStatus = $this->extractSubscribeStatus($item);
+        $templateIdString = $this->convertToString($TemplateId);
+
+        $this->createSubscribeLog($event, $templateIdString, $subscribeStatus, $item);
+        $this->dispatchPopupEvent($event, $templateIdString, $subscribeStatus);
+    }
+
+    private function isValidPopupEventItem(mixed $item): bool
+    {
+        if (!is_array($item) && !is_object($item)) {
+            $this->logger->error('微信返回的订阅项不是数组或对象格式', ['item' => $item]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private function isValidTemplateId(mixed $templateId, mixed $item, ServerMessageRequestEvent $event): bool
+    {
+        if (null === $templateId || '' === $templateId) {
+            $this->logger->error('微信返回异常的订阅结果数据', [
+                'item' => $item,
+                'message' => $event->getMessage(),
+            ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private function extractSubscribeStatus(mixed $item): string
+    {
+        $subscribeStatusValue = is_array($item) && isset($item['SubscribeStatusString']) ? $item['SubscribeStatusString'] : '';
+
+        return is_string($subscribeStatusValue) ? $subscribeStatusValue : (is_scalar($subscribeStatusValue) ? (string) $subscribeStatusValue : '');
+    }
+
+    private function convertToString(mixed $value): string
+    {
+        return is_string($value) ? $value : (is_scalar($value) ? (string) $value : '');
+    }
+
+    private function createSubscribeLog(ServerMessageRequestEvent $event, string $templateId, string $subscribeStatus, mixed $item): void
+    {
+        $log = new SubscribeMessageLog();
+        $log->setAccount($event->getAccount());
+        $log->setUser($event->getWechatUser());
+        $log->setTemplateId($templateId);
+        $log->setSubscribeStatus($subscribeStatus);
+        $log->setRawData(Json::encode($item));
+        $this->doctrineService->asyncInsert($log);
+    }
+
+    private function dispatchPopupEvent(ServerMessageRequestEvent $event, string $templateId, string $subscribeStatus): void
+    {
+        $nextEvent = new SubscribeMsgPopupEvent();
+        $nextEvent->setAccount($event->getAccount());
+        $nextEvent->setTemplateId($templateId);
+        $nextEvent->setUser($event->getWechatUser());
+        $nextEvent->setSubscribeStatus($subscribeStatus);
+        $this->eventDispatcher->dispatch($nextEvent);
+    }
+
+    /**
+     * 当用户在手机端服务通知里消息卡片右上角"..."管理消息时,或者在小程序设置管理中的订阅消息管理页面内管理消息时,相应的行为事件会推送至开发者所配置的服务器地址。
+     * 目前只推送取消订阅的事件，即对消息设置"拒收"
      */
     #[AsEventListener(priority: 10)]
     public function onManageCallback(ServerMessageRequestEvent $event): void
@@ -104,29 +166,66 @@ class SubscribeMessageServerSubscriber
             return;
         }
 
-        // 保存订阅日志
-        // 格式参考 {"message":"收到小程序服务端消息","context":{"ToUserName":"gh_262ad44747a1","FromUserName":"ovGLy5FzO5xf77JAmEPVYrIKI5ro","CreateTime":"1665117240","MsgType":"event","Event":"subscribe_msg_change_event","SubscribeMsgChangeEvent":{"List":[{"TemplateId":"lPirPE98MMSKYP2ymM9LC0zs_pZAuPTI2gZlR3m00jo","SubscribeStatusString":"reject"},{"TemplateId":"-ZQBhqY_fHOR5gpd-30A1j16OBpvh9Gy-vUsm1bQ4j4","SubscribeStatusString":"reject"},{"TemplateId":"rYe-NJDGnFM8fjlM7QEZL4wzAf9acnJ_69rhlvoWz48","SubscribeStatusString":"reject"},{"TemplateId":"3yUt4oxBI9QsUp0gcyEVLYXgulEmK3vyUPX25Ejr8og","SubscribeStatusString":"reject"}]}},"level":200,"level_name":"INFO","channel":"app","datetime":"2022-10-07T12:34:00.777594+08:00","extra":{"request_id":"fc1b3dd4-0ce5-478a-8009-3c66cb62f399"}}
-        // 格式参考 {"ToUserName":"gh_262ad44747a1","FromUserName":"ovGLy5OaLS-nFVNsH5FmvIbPS_kY","CreateTime":"1665536678","MsgType":"event","Event":"subscribe_msg_change_event","SubscribeMsgChangeEvent":{"List":{"TemplateId":"FktTRzgkSHHSBEPsSumxbUrlhSak4vGmc7wmhLTSDyE","SubscribeStatusString":"reject"}}}
-        // 要注意，这里的List不固定的，偶尔是数组，偶尔是对象
-        $list = $event->getMessage()['SubscribeMsgChangeEvent'];
-        if ((bool) isset($list['List'])) {
-            $list = $list['List'];
-        }
-
-        if ((bool) isset($list['TemplateId'])) {
-            $list = [$list];
+        $list = $this->extractChangeEventList($event);
+        if (null === $list) {
+            return;
         }
 
         foreach ($list as $item) {
-            // 拆分为N个记录，方便我们一个个发送
-            $log = new SubscribeMessageLog();
-            $log->setAccount($event->getAccount());
-            $log->setUser($event->getWechatUser());
-            $log->setTemplateId($item['TemplateId']);
-            $log->setSubscribeStatus($item['SubscribeStatusString']);
-            $log->setRawData(Json::encode($item));
-            $this->doctrineService->asyncInsert($log);
+            $this->processChangeEventItem($event, $item);
         }
+    }
+
+    /**
+     * @return array<mixed>|null
+     */
+    private function extractChangeEventList(ServerMessageRequestEvent $event): ?array
+    {
+        $message = $event->getMessage();
+        if (!isset($message['SubscribeMsgChangeEvent'])) {
+            $this->logger->error('微信返回的消息格式不正确或缺少SubscribeMsgChangeEvent', ['message' => $message]);
+
+            return null;
+        }
+
+        $list = $message['SubscribeMsgChangeEvent'];
+        if (is_array($list) && isset($list['List'])) {
+            $list = $list['List'];
+        }
+
+        if (is_array($list) && isset($list['TemplateId'])) {
+            $list = [$list];
+        }
+
+        if (!is_array($list)) {
+            $this->logger->error('微信返回的List数据不是数组格式', ['list' => $list, 'message' => $message]);
+
+            return null;
+        }
+
+        return $list;
+    }
+
+    private function processChangeEventItem(ServerMessageRequestEvent $event, mixed $item): void
+    {
+        if (!is_array($item)) {
+            $this->logger->error('微信返回的订阅项不是数组格式', ['item' => $item]);
+
+            return;
+        }
+
+        $templateId = $item['TemplateId'] ?? '';
+        $subscribeStatus = $item['SubscribeStatusString'] ?? '';
+
+        if ('' === $templateId) {
+            $this->logger->error('微信返回的TemplateId为空', ['item' => $item]);
+
+            return;
+        }
+
+        $templateIdString = $this->convertToString($templateId);
+        $subscribeStatusString = $this->convertToString($subscribeStatus);
+        $this->createSubscribeLog($event, $templateIdString, $subscribeStatusString, $item);
     }
 
     /**
@@ -144,26 +243,46 @@ class SubscribeMessageServerSubscriber
         }
 
         // 查找一条有效的LOG
+        $message = $event->getMessage();
+        if (!isset($message['SubscribeMsgSentEvent'])
+            || !is_array($message['SubscribeMsgSentEvent'])
+            || !isset($message['SubscribeMsgSentEvent']['List'])
+            || !is_array($message['SubscribeMsgSentEvent']['List'])) {
+            $this->logger->error('微信返回的消息格式不正确，缺少必要的SubscribeMsgSentEvent.List数据', ['message' => $message]);
+
+            return;
+        }
+
+        $listData = $message['SubscribeMsgSentEvent']['List'];
+        $templateId = $listData['TemplateId'] ?? '';
+
+        if ('' === $templateId) {
+            $this->logger->error('微信返回的TemplateId为空', ['listData' => $listData]);
+
+            return;
+        }
+
+        $templateIdString = $this->convertToString($templateId);
         $log = $this->messageLogRepository->findOneBy([
             'user' => $event->getWechatUser(),
             'account' => $event->getAccount(),
-            'templateId' => $event->getMessage()['SubscribeMsgSentEvent']['List']['TemplateId'],
+            'templateId' => $templateIdString,
             'subscribeStatus' => 'accept',
             'resultMsgId' => null,
         ]);
-        if ($log === null) {
+        if (null === $log) {
             // 没的话就自己造一条
             $log = new SubscribeMessageLog();
             $log->setUser($event->getWechatUser());
             $log->setAccount($event->getAccount());
             $log->setSubscribeStatus('accept'); // 能拿到发送结果回调，说明是授权过的了
-            $log->setRawData(Json::encode($event->getMessage()));
+            $log->setRawData(Json::encode($message));
         }
 
-        $log->setTemplateId($event->getMessage()['SubscribeMsgSentEvent']['List']['TemplateId']);
-        $log->setResultMsgId(strval($event->getMessage()['SubscribeMsgSentEvent']['List']['MsgID']));
-        $log->setResultCode($event->getMessage()['SubscribeMsgSentEvent']['List']['ErrorCode']);
-        $log->setResultStatus($event->getMessage()['SubscribeMsgSentEvent']['List']['ErrorStatus']);
+        $log->setTemplateId($templateIdString);
+        $log->setResultMsgId((string) ($listData['MsgID'] ?? ''));
+        $log->setResultCode((int) ($listData['ErrorCode'] ?? 0));
+        $log->setResultStatus((string) ($listData['ErrorStatus'] ?? ''));
         $this->doctrineService->asyncInsert($log);
     }
 }

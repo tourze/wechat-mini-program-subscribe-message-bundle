@@ -1,3 +1,0 @@
-wechat_mini_program_subscribe_message_controllers:
-  resource: '../../Controller/'
-  type: attribute
