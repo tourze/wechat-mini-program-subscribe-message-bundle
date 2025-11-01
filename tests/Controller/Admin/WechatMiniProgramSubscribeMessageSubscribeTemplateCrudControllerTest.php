@@ -21,8 +21,7 @@ final class WechatMiniProgramSubscribeMessageSubscribeTemplateCrudControllerTest
     #[Test]
     public function testGetEntityFqcn(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         // 访问任意admin页面以确保Controller已加载
         $client->request('GET', '/admin');

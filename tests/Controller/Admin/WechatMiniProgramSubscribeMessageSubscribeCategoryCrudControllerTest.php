@@ -19,8 +19,7 @@ final class WechatMiniProgramSubscribeMessageSubscribeCategoryCrudControllerTest
     #[Test]
     public function testGetEntityFqcn(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         // 访问任意admin页面以确保Controller已加载
         $client->request('GET', '/admin');
@@ -33,8 +32,7 @@ final class WechatMiniProgramSubscribeMessageSubscribeCategoryCrudControllerTest
     #[Test]
     public function testSync(): void
     {
-        $client = self::createClientWithDatabase();
-        $this->loginAsAdmin($client);
+        $client = self::createAuthenticatedClient();
 
         $client->request('GET', '/admin/wechat-mini-program-subscribe-message/subscribe-category/sync');
 
