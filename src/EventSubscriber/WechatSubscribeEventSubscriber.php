@@ -77,8 +77,15 @@ class WechatSubscribeEventSubscriber
 
         $sendLog = new SendSubscribeLog();
         $sendLog->setUser($user);
-        // TODO: UserInterface 需要添加 getAccount() 方法
-        // $sendLog->setAccount($user->getAccount());
+
+        // 尝试设置Account信息，如果用户对象支持getAccount()方法
+        if (method_exists($user, 'getAccount')) {
+            $account = $user->getAccount();
+            if (null !== $account) {
+                $sendLog->setAccount($account);
+            }
+        }
+
         $sendLog->setTemplateId($templateId);
         $sendLog->setResult($event->getResult());
         $this->entityManager->persist($sendLog);

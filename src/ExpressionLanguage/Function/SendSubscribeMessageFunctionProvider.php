@@ -216,8 +216,15 @@ readonly class SendSubscribeMessageFunctionProvider implements ExpressionFunctio
     private function buildSubscribeMessageRequest(object $wechatUser, string $templateId, array $postData, ?string $page, ?string $miniprogramState): SendSubscribeMessageRequest
     {
         $request = new SendSubscribeMessageRequest();
-        // TODO: UserInterface 需要添加 getAccount() 方法
-        // $request->setAccount($wechatUser->getAccount());
+
+        // 尝试设置Account信息，如果用户对象支持getAccount()方法
+        if (method_exists($wechatUser, 'getAccount')) {
+            $account = $wechatUser->getAccount();
+            if (null !== $account) {
+                $request->setAccount($account);
+            }
+        }
+
         $openId = method_exists($wechatUser, 'getOpenId') ? $this->convertToString($wechatUser->getOpenId()) : '';
         $request->setToUser($openId);
         $request->setTemplateId($templateId);
