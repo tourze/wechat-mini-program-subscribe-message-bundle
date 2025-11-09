@@ -64,6 +64,14 @@ final class SendSubscribeMessageFunctionProviderTest extends AbstractIntegration
 
         $provider = self::getService(SendSubscribeMessageFunctionProvider::class);
 
+        // Debug: 验证依赖注入
+        $reflection = new \ReflectionClass($provider);
+        $loaderProp = $reflection->getProperty('userLoader');
+        $loaderProp->setAccessible(true);
+        $actualLoader = $loaderProp->getValue($provider);
+        var_dump('Loader class: ' . get_class($actualLoader));
+        var_dump('Is mock: ' . ($actualLoader === $userLoader ? 'YES' : 'NO'));
+
         // Act
         $result = $provider->sendWechatMiniProgramSubscribeMessage(
             ['context' => 'test'],
@@ -73,6 +81,8 @@ final class SendSubscribeMessageFunctionProviderTest extends AbstractIntegration
             '/pages/index/index',
             'formal'
         );
+
+        var_dump('Result: ' . ($result ? 'TRUE' : 'FALSE'));
 
         // Assert
         self::assertTrue($result);
