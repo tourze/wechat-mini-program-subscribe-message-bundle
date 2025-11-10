@@ -34,6 +34,12 @@ final class WechatMiniProgramSubscribeMessageSendSubscribeLogCrudControllerTest 
         return self::getService(WechatMiniProgramSubscribeMessageSendSubscribeLogCrudController::class);
     }
 
+    protected function getPreferredDashboardControllerFqcn(): ?string
+    {
+        // 由于我们删除了业务Bundle中的DashboardController，让测试使用默认的测试框架Dashboard
+        return null;
+    }
+
     /**
      * @return iterable<string, array{string}>
      */

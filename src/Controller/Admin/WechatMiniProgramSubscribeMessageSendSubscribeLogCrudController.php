@@ -5,6 +5,8 @@ namespace WechatMiniProgramSubscribeMessageBundle\Controller\Admin;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminCrud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
+use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
@@ -13,6 +15,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\TextFilter;
+use Symfony\Component\HttpFoundation\Response;
+use WechatMiniProgramSubscribeMessageBundle\Controller\Admin\Traits\SafeAdminContextTrait;
 use WechatMiniProgramSubscribeMessageBundle\Entity\SendSubscribeLog;
 
 /**
@@ -21,6 +25,16 @@ use WechatMiniProgramSubscribeMessageBundle\Entity\SendSubscribeLog;
 #[AdminCrud(routePath: '/wechat-mini-program-subscribe-message/send-subscribe-log', routeName: 'wechat_mini_program_subscribe_message_send_subscribe_log')]
 final class WechatMiniProgramSubscribeMessageSendSubscribeLogCrudController extends AbstractCrudController
 {
+    use SafeAdminContextTrait;
+
+    /**
+     * 安全的index方法，处理AdminContext::getEntity()返回null的情况
+     */
+    public function index(AdminContext $context): Response|KeyValueStore
+    {
+        return $this->safeIndex($context);
+    }
+
     public static function getEntityFqcn(): string
     {
         return SendSubscribeLog::class;
