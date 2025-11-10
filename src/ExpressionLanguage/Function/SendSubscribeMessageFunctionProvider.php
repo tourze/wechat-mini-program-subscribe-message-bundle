@@ -71,11 +71,6 @@ readonly class SendSubscribeMessageFunctionProvider implements ExpressionFunctio
      */
     public function sendWechatMiniProgramSubscribeMessage(array $values, UserInterface $user, string $templateId, array|string|null $data = null, ?string $page = null, ?string $miniprogramState = null): bool
     {
-        // Check if user has a getPassword method (duck typing for PasswordAuthenticatedUserInterface)
-        if (!method_exists($user, 'getPassword')) {
-            return false;
-        }
-
         $wechatUser = $this->loadWechatUser($user);
         if (null === $wechatUser) {
             return false;
