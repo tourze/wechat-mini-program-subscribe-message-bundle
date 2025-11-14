@@ -78,17 +78,41 @@ trait SafeAdminContextTrait
             return parent::index($context);
         } catch (\TypeError $e) {
             // 如果是AdminContext::getEntity()相关的TypeError，重定向到安全页面
-            if (str_contains($e->getMessage(), 'AdminContext::getEntity')) {
-                $crudDto = $context->getCrud();
-                if (null !== $crudDto && null !== $crudDto->getControllerFqcn()) {
-                    // 使用admin路由和正确的参数格式
-                    return new RedirectResponse($this->generateUrl('admin', [
-                        'crudAction' => 'index',
-                        'crudControllerFqcn' => $crudDto->getControllerFqcn(),
-                    ]));
-                }
+            if (!$this->isAdminContextEntityError($e)) {
+                throw $e;
             }
-            throw $e;
+
+            return $this->redirectToSafeIndex($context);
         }
+    }
+
+    /**
+     * 检查是否为AdminContext::getEntity()相关的错误
+     */
+    private function isAdminContextEntityError(\TypeError $e): bool
+    {
+        return str_contains($e->getMessage(), 'AdminContext::getEntity');
+    }
+
+    /**
+     * 重定向到安全的index页面
+     */
+    private function redirectToSafeIndex(AdminContext $context): RedirectResponse
+    {
+        $crudDto = $context->getCrud();
+        if (null === $crudDto || null === $crudDto->getControllerFqcn()) {
+            throw new \RuntimeException('无法获取CRUD控制器信息');
+        }
+
+        $referer = $context->getRequest()->headers->get('referer');
+        if (is_string($referer) && $referer !== '') {
+            return new RedirectResponse($referer);
+        }
+
+        // 如果没有referer，使用admin路由和正确的参数格式
+        return new RedirectResponse($this->generateUrl('admin', [
+            'crudAction' => 'index',
+            'crudControllerFqcn' => $crudDto->getControllerFqcn(),
+        ]));
     }
 }
