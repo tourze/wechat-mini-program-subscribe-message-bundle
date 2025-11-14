@@ -82,6 +82,13 @@ trait SafeAdminContextTrait
                 throw $e;
             }
 
+            // 如果无法获取CRUD信息，重新抛出原始TypeError而非创建RuntimeException
+            // 这样可以在测试环境中看到真实的错误，便于调试
+            $crudDto = $context->getCrud();
+            if (null === $crudDto || null === $crudDto->getControllerFqcn()) {
+                throw $e;
+            }
+
             return $this->redirectToSafeIndex($context);
         }
     }
