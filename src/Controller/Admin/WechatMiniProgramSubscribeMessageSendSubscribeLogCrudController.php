@@ -96,4 +96,9 @@ final class WechatMiniProgramSubscribeMessageSendSubscribeLogCrudController exte
             ->add(DateTimeFilter::new('createTime', '创建时间'))
         ;
     }
+
+    public function index(AdminContext $context): Response|KeyValueStore
+    {
+        return $this->safeIndex($context);
+    }
 }
