@@ -27,14 +27,6 @@ final class WechatMiniProgramSubscribeMessageSendSubscribeLogCrudController exte
 {
     use SafeAdminContextTrait;
 
-    /**
-     * 安全的index方法，处理AdminContext::getEntity()返回null的情况
-     */
-    public function index(AdminContext $context): Response|KeyValueStore
-    {
-        return $this->safeIndex($context);
-    }
-
     public static function getEntityFqcn(): string
     {
         return SendSubscribeLog::class;
