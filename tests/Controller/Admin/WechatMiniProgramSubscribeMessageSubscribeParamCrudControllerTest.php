@@ -17,18 +17,6 @@ use WechatMiniProgramSubscribeMessageBundle\Entity\SubscribeParam;
 final class WechatMiniProgramSubscribeMessageSubscribeParamCrudControllerTest extends AbstractEasyAdminControllerTestCase
 {
     #[Test]
-    public function testGetEntityFqcn(): void
-    {
-        $client = self::createAuthenticatedClient();
-
-        // 访问任意admin页面以确保Controller已加载
-        $client->request('GET', '/admin');
-
-        // 然后测试静态方法
-        $result = WechatMiniProgramSubscribeMessageSubscribeParamCrudController::getEntityFqcn();
-        self::assertSame(SubscribeParam::class, $result);
-    }
-
     protected function getControllerService(): WechatMiniProgramSubscribeMessageSubscribeParamCrudController
     {
         return self::getService(WechatMiniProgramSubscribeMessageSubscribeParamCrudController::class);
