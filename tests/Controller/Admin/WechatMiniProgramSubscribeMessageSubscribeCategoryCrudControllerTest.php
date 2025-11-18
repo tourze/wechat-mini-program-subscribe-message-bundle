@@ -17,7 +17,6 @@ use WechatMiniProgramSubscribeMessageBundle\Entity\SubscribeCategory;
 final class WechatMiniProgramSubscribeMessageSubscribeCategoryCrudControllerTest extends AbstractEasyAdminControllerTestCase
 {
     #[Test]
-    #[Test]
     public function testSync(): void
     {
         $client = self::createAuthenticatedClient();
