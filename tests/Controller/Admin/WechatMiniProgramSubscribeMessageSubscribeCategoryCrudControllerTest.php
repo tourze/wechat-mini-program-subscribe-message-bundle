@@ -7,7 +7,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PHPUnit\Framework\Attributes\Test;
 use Tourze\PHPUnitSymfonyWebTest\AbstractEasyAdminControllerTestCase;
 use WechatMiniProgramSubscribeMessageBundle\Controller\Admin\WechatMiniProgramSubscribeMessageSubscribeCategoryCrudController;
-use WechatMiniProgramSubscribeMessageBundle\Entity\SubscribeCategory;
 
 /**
  * @internal

@@ -7,7 +7,6 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PHPUnit\Framework\Attributes\Test;
 use Tourze\PHPUnitSymfonyWebTest\AbstractEasyAdminControllerTestCase;
 use WechatMiniProgramSubscribeMessageBundle\Controller\Admin\WechatMiniProgramSubscribeMessageSendSubscribeLogCrudController;
-use WechatMiniProgramSubscribeMessageBundle\Entity\SendSubscribeLog;
 
 /**
  * @internal
@@ -20,12 +19,6 @@ final class WechatMiniProgramSubscribeMessageSendSubscribeLogCrudControllerTest 
     protected function getControllerService(): WechatMiniProgramSubscribeMessageSendSubscribeLogCrudController
     {
         return self::getService(WechatMiniProgramSubscribeMessageSendSubscribeLogCrudController::class);
-    }
-
-    protected function getPreferredDashboardControllerFqcn(): string
-    {
-        // 使用默认的测试框架Dashboard
-        return 'SymfonyTestingFramework\Controller\Admin\DashboardController';
     }
 
     /**
